@@ -17,6 +17,7 @@ class Studio extends Model
         'cost_amount',
         'studio_type',
         'access_instructions',
+        'photo',
     ];
 
     public function artist(): BelongsTo

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('transport_type', ['caminando', 'transporte_publico', 'auto']);
             $table->decimal('transport_cost', 10, 2)->nullable();
             $table->string('access_instructions', 500)->nullable();
+            $table->string('photo')->nullable();
             $table->timestamps();
         });
     }

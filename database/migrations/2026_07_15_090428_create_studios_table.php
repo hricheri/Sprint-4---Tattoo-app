@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('cost_amount', 10, 2)->nullable();
             $table->enum('studio_type', ['individual', 'compartido']);
             $table->string('access_instructions', 500)->nullable();
+            $table->string('photo')->nullable();
             $table->timestamps();
         });
     }

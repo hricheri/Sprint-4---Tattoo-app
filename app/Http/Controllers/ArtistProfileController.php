@@ -32,63 +32,75 @@ class ArtistProfileController extends Controller
     }
 
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'bio' => 'nullable|string|max:500',
-        'social_media_handle' => 'nullable|string|max:255',
-        'contact_email' => 'nullable|email|max:255',
+    {
+        $validated = $request->validate([
+            'bio' => 'nullable|string|max:500',
+            'social_media_handle' => 'nullable|string|max:255',
+            'contact_email' => 'nullable|email|max:255',
 
-        'studio_name' => 'required|string|max:255',
-        'studio_city' => 'required|string|max:255',
-        'studio_address' => 'nullable|string|max:255',
-        'studio_cost_type' => 'required|in:renta_fija,porcentaje,dueño_sin_costo',
-        'studio_cost_amount' => 'nullable|numeric|min:0',
-        'studio_type' => 'required|in:individual,compartido',
-        'studio_access_instructions' => 'nullable|string|max:500',
-        'studio_features' => 'nullable|array',
-        'studio_features.*' => 'exists:features,id',
+            'studio_name' => 'required|string|max:255',
+            'studio_city' => 'required|string|max:255',
+            'studio_address' => 'nullable|string|max:255',
+            'studio_cost_type' => 'required|in:renta_fija,porcentaje,dueño_sin_costo',
+            'studio_cost_amount' => 'nullable|numeric|min:0',
+            'studio_type' => 'required|in:individual,compartido',
+            'studio_access_instructions' => 'nullable|string|max:500',
+            'studio_features' => 'nullable|array',
+            'studio_features.*' => 'exists:features,id',
+            'studio_photo' => 'nullable|image|max:5120',
 
-        'home_roommates_count' => 'required|integer|min:0',
-        'home_distance_to_studio_minutes' => 'nullable|integer|min:0',
-        'home_transport_type' => 'required|in:caminando,transporte_publico,auto',
-        'home_transport_cost' => 'nullable|numeric|min:0',
-        'home_access_instructions' => 'nullable|string|max:500',
+            'home_roommates_count' => 'required|integer|min:0',
+            'home_distance_to_studio_minutes' => 'nullable|integer|min:0',
+            'home_transport_type' => 'required|in:caminando,transporte_publico,auto',
+            'home_transport_cost' => 'nullable|numeric|min:0',
+            'home_access_instructions' => 'nullable|string|max:500',
+            'home_photo' => 'nullable|image|max:5120',
 
-        'feature_preferences' => 'nullable|array',
-        'feature_preferences.*' => 'exists:features,id',
-    ]);
+            'feature_preferences' => 'nullable|array',
+            'feature_preferences.*' => 'exists:features,id',
+        ]);
 
-    $artist = Artist::create([
-        'user_id' => Auth::id(),
-        'bio' => $validated['bio'] ?? null,
-        'social_media_handle' => $validated['social_media_handle'] ?? null,
-        'contact_email' => $validated['contact_email'] ?? null,
-    ]);
+        $artist = Artist::create([
+            'user_id' => Auth::id(),
+            'bio' => $validated['bio'] ?? null,
+            'social_media_handle' => $validated['social_media_handle'] ?? null,
+            'contact_email' => $validated['contact_email'] ?? null,
+        ]);
 
-    $studio = $artist->studio()->create([
-        'name' => $validated['studio_name'],
-        'city' => $validated['studio_city'],
-        'address' => $validated['studio_address'] ?? null,
-        'cost_type' => $validated['studio_cost_type'],
-        'cost_amount' => $validated['studio_cost_amount'] ?? null,
-        'studio_type' => $validated['studio_type'],
-        'access_instructions' => $validated['studio_access_instructions'] ?? null,
-    ]);
+        $studioPhotoPath = $request->hasFile('studio_photo')
+            ? $request->file('studio_photo')->store('studios', 'public')
+            : null;
 
-    $studio->features()->sync($validated['studio_features'] ?? []);
+        $studio = $artist->studio()->create([
+            'name' => $validated['studio_name'],
+            'city' => $validated['studio_city'],
+            'address' => $validated['studio_address'] ?? null,
+            'cost_type' => $validated['studio_cost_type'],
+            'cost_amount' => $validated['studio_cost_amount'] ?? null,
+            'studio_type' => $validated['studio_type'],
+            'access_instructions' => $validated['studio_access_instructions'] ?? null,
+            'photo' => $studioPhotoPath,
+        ]);
 
-    $artist->home()->create([
-        'roommates_count' => $validated['home_roommates_count'],
-        'distance_to_studio_minutes' => $validated['home_distance_to_studio_minutes'] ?? null,
-        'transport_type' => $validated['home_transport_type'],
-        'transport_cost' => $validated['home_transport_cost'] ?? null,
-        'access_instructions' => $validated['home_access_instructions'] ?? null,
-    ]);
+        $studio->features()->sync($validated['studio_features'] ?? []);
 
-    $artist->featurePreferences()->sync($validated['feature_preferences'] ?? []);
+        $homePhotoPath = $request->hasFile('home_photo')
+            ? $request->file('home_photo')->store('homes', 'public')
+            : null;
 
-    return redirect()->route('artist-profile.show')->with('status', 'Perfil creado correctamente.');
-}
+        $artist->home()->create([
+            'roommates_count' => $validated['home_roommates_count'],
+            'distance_to_studio_minutes' => $validated['home_distance_to_studio_minutes'] ?? null,
+            'transport_type' => $validated['home_transport_type'],
+            'transport_cost' => $validated['home_transport_cost'] ?? null,
+            'access_instructions' => $validated['home_access_instructions'] ?? null,
+            'photo' => $homePhotoPath,
+        ]);
+
+        $artist->featurePreferences()->sync($validated['feature_preferences'] ?? []);
+
+        return redirect()->route('artist-profile.show')->with('status', 'Perfil creado correctamente.');
+    }
 
     public function edit()
     {
@@ -104,68 +116,81 @@ class ArtistProfileController extends Controller
     }
 
     public function update(Request $request)
-{
-    $artist = Auth::user()->artist;
+    {
+        $artist = Auth::user()->artist;
 
-    if (!$artist) {
-        return redirect()->route('artist-profile.create');
+        if (!$artist) {
+            return redirect()->route('artist-profile.create');
+        }
+
+        $validated = $request->validate([
+            'bio' => 'nullable|string|max:500',
+            'social_media_handle' => 'nullable|string|max:255',
+            'contact_email' => 'nullable|email|max:255',
+
+            'studio_name' => 'required|string|max:255',
+            'studio_city' => 'required|string|max:255',
+            'studio_address' => 'nullable|string|max:255',
+            'studio_cost_type' => 'required|in:renta_fija,porcentaje,dueño_sin_costo',
+            'studio_cost_amount' => 'nullable|numeric|min:0',
+            'studio_type' => 'required|in:individual,compartido',
+            'studio_access_instructions' => 'nullable|string|max:500',
+            'studio_features' => 'nullable|array',
+            'studio_features.*' => 'exists:features,id',
+            'studio_photo' => 'nullable|image|max:5120',
+
+            'home_roommates_count' => 'required|integer|min:0',
+            'home_distance_to_studio_minutes' => 'nullable|integer|min:0',
+            'home_transport_type' => 'required|in:caminando,transporte_publico,auto',
+            'home_transport_cost' => 'nullable|numeric|min:0',
+            'home_access_instructions' => 'nullable|string|max:500',
+            'home_photo' => 'nullable|image|max:5120',
+
+            'feature_preferences' => 'nullable|array',
+            'feature_preferences.*' => 'exists:features,id',
+        ]);
+
+        $artist->update([
+            'bio' => $validated['bio'] ?? null,
+            'social_media_handle' => $validated['social_media_handle'] ?? null,
+            'contact_email' => $validated['contact_email'] ?? null,
+        ]);
+
+        $studioData = [
+            'name' => $validated['studio_name'],
+            'city' => $validated['studio_city'],
+            'address' => $validated['studio_address'] ?? null,
+            'cost_type' => $validated['studio_cost_type'],
+            'cost_amount' => $validated['studio_cost_amount'] ?? null,
+            'studio_type' => $validated['studio_type'],
+            'access_instructions' => $validated['studio_access_instructions'] ?? null,
+        ];
+
+        if ($request->hasFile('studio_photo')) {
+            $studioData['photo'] = $request->file('studio_photo')->store('studios', 'public');
+        }
+
+        $artist->studio->update($studioData);
+        $artist->studio->features()->sync($validated['studio_features'] ?? []);
+
+        $homeData = [
+            'roommates_count' => $validated['home_roommates_count'],
+            'distance_to_studio_minutes' => $validated['home_distance_to_studio_minutes'] ?? null,
+            'transport_type' => $validated['home_transport_type'],
+            'transport_cost' => $validated['home_transport_cost'] ?? null,
+            'access_instructions' => $validated['home_access_instructions'] ?? null,
+        ];
+
+        if ($request->hasFile('home_photo')) {
+            $homeData['photo'] = $request->file('home_photo')->store('homes', 'public');
+        }
+
+        $artist->home->update($homeData);
+
+        $artist->featurePreferences()->sync($validated['feature_preferences'] ?? []);
+
+        return redirect()->route('artist-profile.show')->with('status', 'Perfil actualizado correctamente.');
     }
-
-    $validated = $request->validate([
-        'bio' => 'nullable|string|max:500',
-        'social_media_handle' => 'nullable|string|max:255',
-        'contact_email' => 'nullable|email|max:255',
-
-        'studio_name' => 'required|string|max:255',
-        'studio_city' => 'required|string|max:255',
-        'studio_address' => 'nullable|string|max:255',
-        'studio_cost_type' => 'required|in:renta_fija,porcentaje,dueño_sin_costo',
-        'studio_cost_amount' => 'nullable|numeric|min:0',
-        'studio_type' => 'required|in:individual,compartido',
-        'studio_access_instructions' => 'nullable|string|max:500',
-        'studio_features' => 'nullable|array',
-        'studio_features.*' => 'exists:features,id',
-
-        'home_roommates_count' => 'required|integer|min:0',
-        'home_distance_to_studio_minutes' => 'nullable|integer|min:0',
-        'home_transport_type' => 'required|in:caminando,transporte_publico,auto',
-        'home_transport_cost' => 'nullable|numeric|min:0',
-        'home_access_instructions' => 'nullable|string|max:500',
-
-        'feature_preferences' => 'nullable|array',
-        'feature_preferences.*' => 'exists:features,id',
-    ]);
-
-    $artist->update([
-        'bio' => $validated['bio'] ?? null,
-        'social_media_handle' => $validated['social_media_handle'] ?? null,
-        'contact_email' => $validated['contact_email'] ?? null,
-    ]);
-
-    $artist->studio->update([
-        'name' => $validated['studio_name'],
-        'city' => $validated['studio_city'],
-        'address' => $validated['studio_address'] ?? null,
-        'cost_type' => $validated['studio_cost_type'],
-        'cost_amount' => $validated['studio_cost_amount'] ?? null,
-        'studio_type' => $validated['studio_type'],
-        'access_instructions' => $validated['studio_access_instructions'] ?? null,
-    ]);
-
-    $artist->studio->features()->sync($validated['studio_features'] ?? []);
-
-    $artist->home->update([
-        'roommates_count' => $validated['home_roommates_count'],
-        'distance_to_studio_minutes' => $validated['home_distance_to_studio_minutes'] ?? null,
-        'transport_type' => $validated['home_transport_type'],
-        'transport_cost' => $validated['home_transport_cost'] ?? null,
-        'access_instructions' => $validated['home_access_instructions'] ?? null,
-    ]);
-
-    $artist->featurePreferences()->sync($validated['feature_preferences'] ?? []);
-
-    return redirect()->route('artist-profile.show')->with('status', 'Perfil actualizado correctamente.');
-}
 
     public function destroy()
     {

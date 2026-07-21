@@ -121,48 +121,74 @@
                 </div>
             </div>
 
-            {{-- === LO QUE OFRECÉS (features del estudio) === --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-                <h2 class="font-sans font-extrabold text-xl text-lima-600 mb-1">Lo que ofrecés</h2>
-                <p class="font-sans text-sm text-gray-500 mb-6">Seleccioná las características que tiene tu estudio.</p>
+            {{-- === FEATURES (con Alpine.js para los botones de acceso rápido) === --}}
+            <div x-data="{
+                    studioFeatures: {{ Illuminate\Support\Js::from(old('studio_features', [])) }},
+                    preferences: {{ Illuminate\Support\Js::from(old('feature_preferences', [])) }},
+                    mustHaveIds: {{ Illuminate\Support\Js::from($features->where('category', 'must_have')->pluck('id')->values()) }},
+                 }" class="space-y-8">
 
-                @foreach (['must_have' => 'Must haves', 'additional' => 'Adicionales'] as $categoryKey => $categoryLabel)
-                    <div class="mb-5">
-                        <h3 class="font-sans font-bold text-sm uppercase tracking-wide text-gray-400 mb-3">{{ $categoryLabel }}</h3>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach ($features->where('category', $categoryKey) as $feature)
-                                <label class="flex items-center gap-2 rounded-full border-2 border-gray-200 has-[:checked]:border-lima-400 has-[:checked]:bg-lima-100 px-4 py-2 cursor-pointer transition">
-                                    <input type="checkbox" name="studio_features[]" value="{{ $feature->id }}"
-                                        class="rounded text-lima-500 focus:ring-lima-400"
-                                        @checked(collect(old('studio_features'))->contains($feature->id))>
-                                    <span class="font-sans text-sm">{{ $feature->name }}</span>
-                                </label>
-                            @endforeach
+                {{-- === LO QUE OFRECÉS === --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+                    <div class="flex items-start justify-between gap-4 mb-1">
+                        <div>
+                            <h2 class="font-sans font-extrabold text-xl text-lima-600">Lo que ofrecés</h2>
+                            <p class="font-sans text-sm text-gray-500">Seleccioná las características que tiene tu estudio.</p>
                         </div>
+                        <button type="button"
+                            @click="studioFeatures = [...new Set([...studioFeatures, ...mustHaveIds])]"
+                            class="shrink-0 font-sans font-semibold text-sm text-lima-700 bg-lima-100 hover:bg-lima-200 rounded-full px-4 py-2 transition">
+                            Marcar todos los must haves
+                        </button>
                     </div>
-                @endforeach
-            </div>
 
-            {{-- === LO QUE NECESITÁS (preferencias del artista) === --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-                <h2 class="font-sans font-extrabold text-xl text-lavender-700 mb-1">Lo que necesitás</h2>
-                <p class="font-sans text-sm text-gray-500 mb-6">¿Qué características son indispensables en el estudio donde vas a tatuar?</p>
-
-                @foreach (['must_have' => 'Must haves', 'additional' => 'Adicionales'] as $categoryKey => $categoryLabel)
-                    <div class="mb-5">
-                        <h3 class="font-sans font-bold text-sm uppercase tracking-wide text-gray-400 mb-3">{{ $categoryLabel }}</h3>
-                        <div class="flex flex-wrap gap-2">
-                            @foreach ($features->where('category', $categoryKey) as $feature)
-                                <label class="flex items-center gap-2 rounded-full border-2 border-gray-200 has-[:checked]:border-lavender-400 has-[:checked]:bg-lavender-100 px-4 py-2 cursor-pointer transition">
-                                    <input type="checkbox" name="feature_preferences[]" value="{{ $feature->id }}"
-                                        class="rounded text-lavender-500 focus:ring-lavender-400"
-                                        @checked(collect(old('feature_preferences'))->contains($feature->id))>
-                                    <span class="font-sans text-sm">{{ $feature->name }}</span>
-                                </label>
-                            @endforeach
+                    @foreach (['must_have' => 'Must haves', 'additional' => 'Adicionales'] as $categoryKey => $categoryLabel)
+                        <div class="mt-5">
+                            <h3 class="font-sans font-bold text-sm uppercase tracking-wide text-gray-400 mb-3">{{ $categoryLabel }}</h3>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($features->where('category', $categoryKey) as $feature)
+                                    <label class="flex items-center gap-2 rounded-full border-2 border-gray-200 has-[:checked]:border-lima-400 has-[:checked]:bg-lima-100 px-4 py-2 cursor-pointer transition">
+                                        <input type="checkbox" name="studio_features[]" value="{{ $feature->id }}"
+                                            x-model.number="studioFeatures"
+                                            class="rounded text-lima-500 focus:ring-lima-400">
+                                        <span class="font-sans text-sm whitespace-nowrap">{{ $feature->name }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
                         </div>
+                    @endforeach
+                </div>
+
+                {{-- === LO QUE NECESITÁS === --}}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+                    <div class="flex items-start justify-between gap-4 mb-1">
+                        <div>
+                            <h2 class="font-sans font-extrabold text-xl text-lavender-700">Lo que necesitás</h2>
+                            <p class="font-sans text-sm text-gray-500">¿Qué características son indispensables en el estudio donde vas a tatuar?</p>
+                        </div>
+                        <button type="button"
+                            @click="preferences = [...new Set([...preferences, ...studioFeatures])]"
+                            class="shrink-0 font-sans font-semibold text-sm text-lavender-700 bg-lavender-100 hover:bg-lavender-200 rounded-full px-4 py-2 transition">
+                            Copiar de mi estudio
+                        </button>
                     </div>
-                @endforeach
+
+                    @foreach (['must_have' => 'Must haves', 'additional' => 'Adicionales'] as $categoryKey => $categoryLabel)
+                        <div class="mt-5">
+                            <h3 class="font-sans font-bold text-sm uppercase tracking-wide text-gray-400 mb-3">{{ $categoryLabel }}</h3>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach ($features->where('category', $categoryKey) as $feature)
+                                    <label class="flex items-center gap-2 rounded-full border-2 border-gray-200 has-[:checked]:border-lavender-400 has-[:checked]:bg-lavender-100 px-4 py-2 cursor-pointer transition">
+                                        <input type="checkbox" name="feature_preferences[]" value="{{ $feature->id }}"
+                                            x-model.number="preferences"
+                                            class="rounded text-lavender-500 focus:ring-lavender-400">
+                                        <span class="font-sans text-sm whitespace-nowrap">{{ $feature->name }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
 
             {{-- === TU HOGAR === --}}

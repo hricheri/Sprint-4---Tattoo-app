@@ -17,7 +17,39 @@ class ArtistProfileController extends Controller
             return redirect()->route('artist-profile.create');
         }
 
-        return view('artist-profile.show', compact('artist'));
+        $offersAllMustHaves = $this->offersAllMustHaves($artist);
+        $needsAllMustHaves = $this->needsAllMustHaves($artist);
+
+        return view('artist-profile.show', compact('artist', 'offersAllMustHaves', 'needsAllMustHaves'));
+    }
+
+    public function preview()
+    {
+        $artist = Auth::user()->artist()->with(['studio.features', 'home', 'featurePreferences'])->first();
+
+        if (!$artist) {
+            return redirect()->route('artist-profile.create');
+        }
+
+        $offersAllMustHaves = $this->offersAllMustHaves($artist);
+
+            return view('artist-profile.preview', compact('artist', 'offersAllMustHaves'));
+    }
+
+    private function offersAllMustHaves(Artist $artist): bool
+    {
+        $mustHaveIds = Feature::where('category', 'must_have')->pluck('id');
+        $studioFeatureIds = $artist->studio->features->pluck('id');
+
+    return $mustHaveIds->diff($studioFeatureIds)->isEmpty();
+    }
+
+    private function needsAllMustHaves(Artist $artist): bool
+    {
+        $mustHaveIds = Feature::where('category', 'must_have')->pluck('id');
+        $preferenceIds = $artist->featurePreferences->pluck('id');
+
+    return $mustHaveIds->diff($preferenceIds)->isEmpty();
     }
 
     public function create()
@@ -37,6 +69,7 @@ class ArtistProfileController extends Controller
             'bio' => 'nullable|string|max:500',
             'social_media_handle' => 'nullable|string|max:255',
             'contact_email' => 'nullable|email|max:255',
+            'artist_photo' => 'nullable|image|max:5120',
 
             'studio_name' => 'required|string|max:255',
             'studio_city' => 'required|string|max:255',
@@ -60,11 +93,16 @@ class ArtistProfileController extends Controller
             'feature_preferences.*' => 'exists:features,id',
         ]);
 
+        $artistPhotoPath = $request->hasFile('artist_photo')
+            ? $request->file('artist_photo')->store('artists', 'public')
+            : null;
+
         $artist = Artist::create([
             'user_id' => Auth::id(),
             'bio' => $validated['bio'] ?? null,
             'social_media_handle' => $validated['social_media_handle'] ?? null,
             'contact_email' => $validated['contact_email'] ?? null,
+            'profile_photo' => $artistPhotoPath,
         ]);
 
         $studioPhotoPath = $request->hasFile('studio_photo')
@@ -127,6 +165,7 @@ class ArtistProfileController extends Controller
             'bio' => 'nullable|string|max:500',
             'social_media_handle' => 'nullable|string|max:255',
             'contact_email' => 'nullable|email|max:255',
+            'artist_photo' => 'nullable|image|max:5120',
 
             'studio_name' => 'required|string|max:255',
             'studio_city' => 'required|string|max:255',
@@ -150,11 +189,17 @@ class ArtistProfileController extends Controller
             'feature_preferences.*' => 'exists:features,id',
         ]);
 
-        $artist->update([
+        $artistData = [
             'bio' => $validated['bio'] ?? null,
             'social_media_handle' => $validated['social_media_handle'] ?? null,
             'contact_email' => $validated['contact_email'] ?? null,
-        ]);
+        ];
+
+        if ($request->hasFile('artist_photo')) {
+            $artistData['profile_photo'] = $request->file('artist_photo')->store('artists', 'public');
+        }
+
+        $artist->update($artistData);
 
         $studioData = [
             'name' => $validated['studio_name'],

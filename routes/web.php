@@ -20,6 +20,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/artist-profile/edit', [ArtistProfileController::class, 'edit'])->name('artist-profile.edit');
     Route::put('/artist-profile', [ArtistProfileController::class, 'update'])->name('artist-profile.update');
     Route::delete('/artist-profile', [ArtistProfileController::class, 'destroy'])->name('artist-profile.destroy');
-});
+    Route::get('/artist-profile/preview', [ArtistProfileController::class, 'preview'])->name('artist-profile.preview');
+    });
 
 require __DIR__.'/auth.php';

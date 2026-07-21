@@ -1,4 +1,5 @@
 @php use Illuminate\Support\Facades\Storage; @endphp
+
 <x-app-layout>
     <x-slot name="header">
         <h1 class="font-sans font-black text-3xl text-gray-900">Editar tu perfil</h1>
@@ -15,6 +16,17 @@
                 <h2 class="font-sans font-extrabold text-xl text-lavender-700 mb-6">Sobre vos</h2>
 
                 <div class="space-y-5">
+                    <div>
+                        <label for="artist_photo" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Foto de perfil</label>
+                        @if ($artist->profile_photo)
+                            <img src="{{ Storage::url($artist->profile_photo) }}" alt="Tu foto de perfil" class="w-24 h-24 object-cover rounded-full mb-3">
+                        @endif
+                        <input type="file" id="artist_photo" name="artist_photo" accept="image/*"
+                            class="w-full rounded-xl border-gray-300 file:mr-4 file:rounded-lg file:border-0 file:bg-lavender-100 file:text-lavender-700 file:font-semibold file:px-4 file:py-2">
+                        <p class="text-xs text-gray-400 mt-1">Dejalo vacío si no querés cambiar la foto actual.</p>
+                        @error('artist_photo') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
+
                     <div>
                         <label for="bio" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Bio</label>
                         <textarea id="bio" name="bio" rows="3"

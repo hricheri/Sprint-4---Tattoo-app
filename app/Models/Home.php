@@ -14,6 +14,7 @@ class Home extends Model
         'transport_type',
         'transport_cost',
         'access_instructions',
+        'photo',
     ];
 
     public function artist(): BelongsTo

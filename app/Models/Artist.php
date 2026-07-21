@@ -14,6 +14,7 @@ class Artist extends Model
         'bio',
         'social_media_handle',
         'contact_email',
+        'profile_photo',
     ];
 
     public function user(): BelongsTo

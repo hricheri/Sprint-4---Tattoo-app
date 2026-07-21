@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('bio', 500)->nullable();
             $table->string('social_media_handle')->nullable();
             $table->string('contact_email')->nullable();
+            $table->string('profile_photo')->nullable();
             $table->timestamps();
         });
     }

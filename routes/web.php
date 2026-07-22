@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ArtistProfileController;
+use App\Http\Controllers\ArtistBrowseController;
 
 Route::view('/', 'welcome');
 
@@ -21,6 +22,11 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/artist-profile', [ArtistProfileController::class, 'update'])->name('artist-profile.update');
     Route::delete('/artist-profile', [ArtistProfileController::class, 'destroy'])->name('artist-profile.destroy');
     Route::get('/artist-profile/preview', [ArtistProfileController::class, 'preview'])->name('artist-profile.preview');
+
+    Route::get('/explore', [ArtistBrowseController::class, 'explore'])->name('explore');
+    Route::post('/likes', [ArtistBrowseController::class, 'like'])->name('likes.store');
+    Route::get('/favorites', [ArtistBrowseController::class, 'favorites'])->name('favorites');
+    Route::post('/explore/dismiss', [ArtistBrowseController::class, 'dismiss'])->name('explore.dismiss');
     });
 
 require __DIR__.'/auth.php';

@@ -33,6 +33,15 @@ new class extends Component
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('artist-profile.show')" :active="request()->routeIs('artist-profile.*')" wire:navigate>
+                        {{ __('My Profile') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('explore')" :active="request()->routeIs('explore')" wire:navigate>
+                        {{ __('Explore') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('favorites')" :active="request()->routeIs('favorites')" wire:navigate>
+                        {{ __('Favorites') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -53,7 +62,7 @@ new class extends Component
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile')" wire:navigate>
-                            {{ __('Profile') }}
+                            {{ __('Account Settings') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -84,6 +93,15 @@ new class extends Component
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('artist-profile.show')" :active="request()->routeIs('artist-profile.*')" wire:navigate>
+                {{ __('My Profile') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('explore')" :active="request()->routeIs('explore')" wire:navigate>
+                {{ __('Explore') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('favorites')" :active="request()->routeIs('favorites')" wire:navigate>
+                {{ __('Favorites') }}
+            </x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->
@@ -95,7 +113,7 @@ new class extends Component
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile')" wire:navigate>
-                    {{ __('Profile') }}
+                    {{ __('Account Settings') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->

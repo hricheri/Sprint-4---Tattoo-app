@@ -42,6 +42,9 @@ new class extends Component
                     <x-nav-link :href="route('favorites')" :active="request()->routeIs('favorites')" wire:navigate>
                         {{ __('Favorites') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('swaps.index')" :active="request()->routeIs('swaps.*')" wire:navigate>
+                        {{ __('My Swaps') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -101,6 +104,9 @@ new class extends Component
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('favorites')" :active="request()->routeIs('favorites')" wire:navigate>
                 {{ __('Favorites') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('swaps.index')" :active="request()->routeIs('swaps.*')" wire:navigate>
+                {{ __('My Swaps') }}
             </x-responsive-nav-link>
         </div>
 

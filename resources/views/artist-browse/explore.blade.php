@@ -3,11 +3,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h1 class="font-sans font-black text-3xl text-gray-900">Explore</h1>
-            <a href="{{ route('favorites') }}"
-                class="font-sans font-extrabold text-sm bg-lavender-300 hover:bg-lavender-400 text-gray-900 rounded-full px-5 py-2 transition">
-                Favorites
-            </a>
-        </div>
+            
         <p class="font-sans text-gray-500 mt-1">Discover artists to swap studio and home with.</p>
     </x-slot>
 

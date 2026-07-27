@@ -52,7 +52,7 @@
             </div>
         </div>
 
-        <a href="{{ route('artist-profile.show') }}"
+        <a href="{{ route('explore') }}"
             class="font-sans font-extrabold text-sm bg-gray-900 hover:bg-gray-800 text-white rounded-full px-5 py-2 transition">
             Done
         </a>

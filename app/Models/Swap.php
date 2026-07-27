@@ -18,6 +18,12 @@ class Swap extends Model
         'promo_caption',
     ];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'includes_money_exchange' => 'boolean',
+    ];
+
     public function artistA(): BelongsTo
     {
         return $this->belongsTo(Artist::class, 'artist_a_id');

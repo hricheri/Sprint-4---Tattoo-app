@@ -1,19 +1,33 @@
 <?php
 
 use App\Livewire\Actions\Logout;
+use App\Models\Artist;
 use App\Models\Like;
+use App\Models\Swap;
 use Livewire\Volt\Component;
 
 new class extends Component
 {
-    public $favoritesCount = 0;
+    public $swapsAlertCount = 0;
 
     public function mount()
     {
         $artist = auth()->user()->artist ?? null;
 
         if ($artist) {
-            $this->favoritesCount = Like::where('liker_artist_id', $artist->id)->count();
+            $matchedIds = Like::where('liker_artist_id', $artist->id)
+                ->whereIn('liked_artist_id', Like::where('liked_artist_id', $artist->id)->pluck('liker_artist_id'))
+                ->pluck('liked_artist_id');
+
+            $existingSwapArtistIds = Swap::where('artist_a_id', $artist->id)
+                ->orWhere('artist_b_id', $artist->id)
+                ->get()
+                ->flatMap(fn ($s) => [$s->artist_a_id, $s->artist_b_id])
+                ->unique();
+
+            $this->swapsAlertCount = Artist::whereIn('id', $matchedIds)
+                ->whereNotIn('id', $existingSwapArtistIds)
+                ->count();
         }
     }
 
@@ -64,10 +78,10 @@ new class extends Component
                     {{ __('My Availability') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('swaps.index')" :active="request()->routeIs('swaps.*')" wire:navigate>
-                    {{ __('My Swaps') }}
+                    {{ __('My Swaps') }} @if ($swapsAlertCount > 0) ({{ $swapsAlertCount }}) @endif
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('favorites')" :active="request()->routeIs('favorites')" wire:navigate>
-                    {{ __('Favorites') }} @if ($favoritesCount > 0) ({{ $favoritesCount }}) @endif
+                    {{ __('Favorites') }}
                 </x-responsive-nav-link>
             </div>
 
@@ -123,24 +137,24 @@ new class extends Component
         </a>
 
         <a href="{{ route('swaps.index') }}" wire:navigate
-            class="p-3 rounded-full transition {{ request()->routeIs('swaps.*') ? 'text-lavender-600 bg-lavender-50' : 'text-gray-500 hover:text-lavender-600 hover:bg-lavender-50' }}"
+            class="relative p-3 rounded-full transition {{ request()->routeIs('swaps.*') ? 'text-lavender-600 bg-lavender-50' : 'text-gray-500 hover:text-lavender-600 hover:bg-lavender-50' }}"
             title="My Swaps">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-9L21 3m0 0l-4.5 4.5M21 3H7.5" />
             </svg>
+            @if ($swapsAlertCount > 0)
+                <span class="absolute top-0.5 right-0.5 bg-lavender-500 text-white text-[10px] font-sans font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {{ $swapsAlertCount }}
+                </span>
+            @endif
         </a>
 
         <a href="{{ route('favorites') }}" wire:navigate
-            class="relative p-3 rounded-full transition {{ request()->routeIs('favorites') ? 'text-lavender-600 bg-lavender-50' : 'text-gray-500 hover:text-lavender-600 hover:bg-lavender-50' }}"
+            class="p-3 rounded-full transition {{ request()->routeIs('favorites') ? 'text-lavender-600 bg-lavender-50' : 'text-gray-500 hover:text-lavender-600 hover:bg-lavender-50' }}"
             title="Favorites">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
             </svg>
-            @if ($favoritesCount > 0)
-                <span class="absolute top-0.5 right-0.5 bg-lima-300 text-gray-900 text-[10px] font-sans font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                    {{ $favoritesCount }}
-                </span>
-            @endif
         </a>
 
         <div class="w-6 border-t border-gray-100 my-1"></div>

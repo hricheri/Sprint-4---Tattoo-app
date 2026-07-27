@@ -109,24 +109,22 @@ new class extends Component
     <!-- Floating vertical icon dock (desktop only) -->
     <div class="hidden sm:flex fixed right-5 top-1/2 -translate-y-1/2 z-50 flex-col items-center gap-1 bg-white rounded-full shadow-lg border border-gray-100 p-2">
 
-        @if (request()->routeIs('artist-profile.*'))
-            <a href="{{ route('explore') }}" wire:navigate
-                class="p-3 rounded-full text-gray-500 hover:text-lavender-600 hover:bg-lavender-50 transition"
-                title="Explore">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 010 18M12 3a14.5 14.5 0 000 18" />
-                </svg>
-            </a>
-        @else
-            <a href="{{ route('artist-profile.show') }}" wire:navigate
-                class="p-3 rounded-full text-gray-500 hover:text-lavender-600 hover:bg-lavender-50 transition"
-                title="My Profile">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-            </a>
-        @endif
+        <a href="{{ route('explore') }}" wire:navigate
+            class="p-3 rounded-full transition {{ request()->routeIs('explore') ? 'text-lavender-600 bg-lavender-50' : 'text-gray-500 hover:text-lavender-600 hover:bg-lavender-50' }}"
+            title="Explore">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 010 18M12 3a14.5 14.5 0 000 18" />
+            </svg>
+        </a>
+
+        <a href="{{ route('artist-profile.show') }}" wire:navigate
+            class="p-3 rounded-full transition {{ request()->routeIs('artist-profile.*') ? 'text-lavender-600 bg-lavender-50' : 'text-gray-500 hover:text-lavender-600 hover:bg-lavender-50' }}"
+            title="My Profile">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+        </a>
 
         <a href="{{ route('availability') }}" wire:navigate
             class="p-3 rounded-full transition {{ request()->routeIs('availability') ? 'text-lavender-600 bg-lavender-50' : 'text-gray-500 hover:text-lavender-600 hover:bg-lavender-50' }}"

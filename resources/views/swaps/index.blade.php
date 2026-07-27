@@ -30,7 +30,7 @@
                             </div>
                             <a href="{{ route('swaps.create', $artist) }}"
                                 class="font-sans font-extrabold text-sm bg-lima-300 hover:bg-lima-400 text-gray-900 rounded-full px-5 py-2 transition">
-                                Propose Swap
+                                Set Dates
                             </a>
                         </div>
                     @endforeach

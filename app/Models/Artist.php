@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Artist extends Model
@@ -35,5 +36,10 @@ class Artist extends Model
     public function featurePreferences(): BelongsToMany
     {
         return $this->belongsToMany(Feature::class, 'artist_feature_preference');
+    }
+
+    public function availabilities(): HasMany
+    {
+        return $this->hasMany(Availability::class);
     }
 }

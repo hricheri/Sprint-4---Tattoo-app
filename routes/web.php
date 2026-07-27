@@ -34,6 +34,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/swaps', [SwapController::class, 'store'])->name('swaps.store');
     Route::post('/swaps/{swap}/accept', [SwapController::class, 'accept'])->name('swaps.accept');
     Route::post('/swaps/{swap}/reject', [SwapController::class, 'reject'])->name('swaps.reject');
+
+    Route::view('/availability', 'availability')->name('availability');
 });
 
 require __DIR__.'/auth.php';

@@ -1,9 +1,8 @@
 @php use Illuminate\Support\Facades\Storage; @endphp
-
 <x-app-layout>
     <x-slot name="header">
-        <h1 class="font-sans font-black text-3xl text-gray-900">Editar tu perfil</h1>
-        <p class="font-sans text-gray-500 mt-1">Actualizá tu información cuando quieras.</p>
+        <h1 class="font-sans font-black text-3xl text-gray-900">Edit your profile</h1>
+        <p class="font-sans text-gray-500 mt-1">Update your information whenever you want.</p>
     </x-slot>
 
     <div class="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
@@ -11,19 +10,19 @@
             @csrf
             @method('PUT')
 
-            {{-- === DATOS DEL ARTISTA === --}}
+            {{-- === ARTIST DATA === --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-                <h2 class="font-sans font-extrabold text-xl text-lavender-700 mb-6">Sobre vos</h2>
+                <h2 class="font-sans font-extrabold text-xl text-lavender-700 mb-6">About you</h2>
 
                 <div class="space-y-5">
                     <div>
-                        <label for="artist_photo" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Foto de perfil</label>
+                        <label for="artist_photo" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Profile photo</label>
                         @if ($artist->profile_photo)
-                            <img src="{{ Storage::url($artist->profile_photo) }}" alt="Tu foto de perfil" class="w-24 h-24 object-cover rounded-full mb-3">
+                            <img src="{{ photo_url($artist->profile_photo) }}" alt="Your profile photo" class="w-24 h-24 object-cover rounded-full mb-3">
                         @endif
                         <input type="file" id="artist_photo" name="artist_photo" accept="image/*"
                             class="w-full rounded-xl border-gray-300 file:mr-4 file:rounded-lg file:border-0 file:bg-lavender-100 file:text-lavender-700 file:font-semibold file:px-4 file:py-2">
-                        <p class="text-xs text-gray-400 mt-1">Dejalo vacío si no querés cambiar la foto actual.</p>
+                        <p class="text-xs text-gray-400 mt-1">Leave empty to keep your current photo.</p>
                         @error('artist_photo') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -36,14 +35,14 @@
 
                     <div class="grid sm:grid-cols-2 gap-5">
                         <div>
-                            <label for="social_media_handle" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Redes sociales</label>
+                            <label for="social_media_handle" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Social media</label>
                             <input type="text" id="social_media_handle" name="social_media_handle" value="{{ old('social_media_handle', $artist->social_media_handle) }}"
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
                             @error('social_media_handle') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="contact_email" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Email de contacto</label>
+                            <label for="contact_email" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Contact email</label>
                             <input type="email" id="contact_email" name="contact_email" value="{{ old('contact_email', $artist->contact_email) }}"
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
                             @error('contact_email') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
@@ -52,32 +51,32 @@
                 </div>
             </div>
 
-            {{-- === TU ESTUDIO === --}}
+            {{-- === YOUR STUDIO === --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-                <h2 class="font-sans font-extrabold text-xl text-lavender-700 mb-6">Tu estudio</h2>
+                <h2 class="font-sans font-extrabold text-xl text-lavender-700 mb-6">Your studio</h2>
 
                 <div class="space-y-5">
                     <div>
-                        <label for="studio_photo" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Foto del estudio</label>
+                        <label for="studio_photo" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Studio photo</label>
                         @if ($artist->studio->photo)
-                            <img src="{{ Storage::url($artist->studio->photo) }}" alt="Foto actual del estudio" class="w-full h-40 object-cover rounded-xl mb-3">
+                            <img src="{{ photo_url($artist->studio->photo) }}" alt="Current studio photo" class="w-full h-40 object-cover rounded-xl mb-3">
                         @endif
                         <input type="file" id="studio_photo" name="studio_photo" accept="image/*"
                             class="w-full rounded-xl border-gray-300 file:mr-4 file:rounded-lg file:border-0 file:bg-lavender-100 file:text-lavender-700 file:font-semibold file:px-4 file:py-2">
-                        <p class="text-xs text-gray-400 mt-1">Dejalo vacío si no querés cambiar la foto actual.</p>
+                        <p class="text-xs text-gray-400 mt-1">Leave empty to keep your current photo.</p>
                         @error('studio_photo') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid sm:grid-cols-2 gap-5">
                         <div>
-                            <label for="studio_name" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Nombre del estudio *</label>
+                            <label for="studio_name" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Studio name *</label>
                             <input type="text" id="studio_name" name="studio_name" value="{{ old('studio_name', $artist->studio->name) }}" required
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
                             @error('studio_name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="studio_city" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Ciudad *</label>
+                            <label for="studio_city" class="block font-sans font-semibold text-sm text-gray-700 mb-1">City *</label>
                             <input type="text" id="studio_city" name="studio_city" value="{{ old('studio_city', $artist->studio->city) }}" required
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
                             @error('studio_city') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
@@ -85,7 +84,7 @@
                     </div>
 
                     <div>
-                        <label for="studio_address" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Dirección</label>
+                        <label for="studio_address" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Address</label>
                         <input type="text" id="studio_address" name="studio_address" value="{{ old('studio_address', $artist->studio->address) }}"
                             class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
                         @error('studio_address') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
@@ -93,19 +92,19 @@
 
                     <div class="grid sm:grid-cols-2 gap-5">
                         <div>
-                            <label for="studio_cost_type" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Tipo de costo *</label>
+                            <label for="studio_cost_type" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Cost type *</label>
                             <select id="studio_cost_type" name="studio_cost_type" required
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
-                                <option value="">Elegí una opción</option>
-                                <option value="renta_fija" @selected(old('studio_cost_type', $artist->studio->cost_type) == 'renta_fija')>Renta fija</option>
-                                <option value="porcentaje" @selected(old('studio_cost_type', $artist->studio->cost_type) == 'porcentaje')>Porcentaje por tatuaje</option>
-                                <option value="dueño_sin_costo" @selected(old('studio_cost_type', $artist->studio->cost_type) == 'dueño_sin_costo')>Soy dueño/a, sin costo</option>
+                                <option value="">Choose an option</option>
+                                <option value="renta_fija" @selected(old('studio_cost_type', $artist->studio->cost_type) == 'renta_fija')>Fixed rent</option>
+                                <option value="porcentaje" @selected(old('studio_cost_type', $artist->studio->cost_type) == 'porcentaje')>Percentage per tattoo</option>
+                                <option value="dueño_sin_costo" @selected(old('studio_cost_type', $artist->studio->cost_type) == 'dueño_sin_costo')>I own it, no cost</option>
                             </select>
                             @error('studio_cost_type') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="studio_cost_amount" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Monto (si aplica)</label>
+                            <label for="studio_cost_amount" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Amount (if applicable)</label>
                             <input type="number" step="0.01" id="studio_cost_amount" name="studio_cost_amount" value="{{ old('studio_cost_amount', $artist->studio->cost_amount) }}"
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
                             @error('studio_cost_amount') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
@@ -113,7 +112,7 @@
                     </div>
 
                     <div>
-                        <span class="block font-sans font-semibold text-sm text-gray-700 mb-2">Tipo de estudio *</span>
+                        <span class="block font-sans font-semibold text-sm text-gray-700 mb-2">Studio type *</span>
                         <div class="flex gap-3">
                             <label class="flex-1 flex items-center justify-center gap-2 rounded-xl border-2 border-gray-200 has-[:checked]:border-lavender-400 has-[:checked]:bg-lavender-50 px-4 py-3 cursor-pointer transition">
                                 <input type="radio" name="studio_type" value="individual" class="text-lavender-500 focus:ring-lavender-400" @checked(old('studio_type', $artist->studio->studio_type) == 'individual') required>
@@ -121,14 +120,14 @@
                             </label>
                             <label class="flex-1 flex items-center justify-center gap-2 rounded-xl border-2 border-gray-200 has-[:checked]:border-lavender-400 has-[:checked]:bg-lavender-50 px-4 py-3 cursor-pointer transition">
                                 <input type="radio" name="studio_type" value="compartido" class="text-lavender-500 focus:ring-lavender-400" @checked(old('studio_type', $artist->studio->studio_type) == 'compartido')>
-                                <span class="font-sans font-semibold text-sm">Compartido</span>
+                                <span class="font-sans font-semibold text-sm">Shared</span>
                             </label>
                         </div>
                         @error('studio_type') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label for="studio_access_instructions" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Instrucciones de acceso</label>
+                        <label for="studio_access_instructions" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Access instructions</label>
                         <textarea id="studio_access_instructions" name="studio_access_instructions" rows="2"
                             class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">{{ old('studio_access_instructions', $artist->studio->access_instructions) }}</textarea>
                         @error('studio_access_instructions') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
@@ -146,17 +145,17 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
                     <div class="flex items-start justify-between gap-4 mb-1">
                         <div>
-                            <h2 class="font-sans font-extrabold text-xl text-lima-600">Lo que ofrecés</h2>
-                            <p class="font-sans text-sm text-gray-500">Seleccioná las características que tiene tu estudio.</p>
+                            <h2 class="font-sans font-extrabold text-xl text-lima-600">What you offer</h2>
+                            <p class="font-sans text-sm text-gray-500">Select the features your studio has.</p>
                         </div>
                         <button type="button"
                             @click="studioFeatures = [...new Set([...studioFeatures, ...mustHaveIds])]"
                             class="shrink-0 font-sans font-semibold text-sm text-lima-700 bg-lima-100 hover:bg-lima-200 rounded-full px-4 py-2 transition">
-                            Marcar todos los must haves
+                            Mark all must-haves
                         </button>
                     </div>
 
-                    @foreach (['must_have' => 'Must haves', 'additional' => 'Adicionales'] as $categoryKey => $categoryLabel)
+                    @foreach (['must_have' => 'Must haves', 'additional' => 'Additional'] as $categoryKey => $categoryLabel)
                         <div class="mt-5">
                             <h3 class="font-sans font-bold text-sm uppercase tracking-wide text-gray-400 mb-3">{{ $categoryLabel }}</h3>
                             <div class="flex flex-wrap gap-2">
@@ -176,17 +175,17 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
                     <div class="flex items-start justify-between gap-4 mb-1">
                         <div>
-                            <h2 class="font-sans font-extrabold text-xl text-lavender-700">Lo que necesitás</h2>
-                            <p class="font-sans text-sm text-gray-500">¿Qué características son indispensables en el estudio donde vas a tatuar?</p>
+                            <h2 class="font-sans font-extrabold text-xl text-lavender-700">What you need</h2>
+                            <p class="font-sans text-sm text-gray-500">What features are non-negotiable in a studio you'll tattoo at?</p>
                         </div>
                         <button type="button"
                             @click="preferences = [...new Set([...preferences, ...studioFeatures])]"
                             class="shrink-0 font-sans font-semibold text-sm text-lavender-700 bg-lavender-100 hover:bg-lavender-200 rounded-full px-4 py-2 transition">
-                            Copiar de mi estudio
+                            Copy from my studio
                         </button>
                     </div>
 
-                    @foreach (['must_have' => 'Must haves', 'additional' => 'Adicionales'] as $categoryKey => $categoryLabel)
+                    @foreach (['must_have' => 'Must haves', 'additional' => 'Additional'] as $categoryKey => $categoryLabel)
                         <div class="mt-5">
                             <h3 class="font-sans font-bold text-sm uppercase tracking-wide text-gray-400 mb-3">{{ $categoryLabel }}</h3>
                             <div class="flex flex-wrap gap-2">
@@ -204,32 +203,32 @@
                 </div>
             </div>
 
-            {{-- === TU HOGAR === --}}
+            {{-- === YOUR HOME === --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-                <h2 class="font-sans font-extrabold text-xl text-lavender-700 mb-6">Tu hogar</h2>
+                <h2 class="font-sans font-extrabold text-xl text-lavender-700 mb-6">Your home</h2>
 
                 <div class="space-y-5">
                     <div>
-                        <label for="home_photo" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Foto del hogar</label>
+                        <label for="home_photo" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Home photo</label>
                         @if ($artist->home->photo)
-                            <img src="{{ Storage::url($artist->home->photo) }}" alt="Foto actual del hogar" class="w-full h-40 object-cover rounded-xl mb-3">
+                            <img src="{{ photo_url($artist->home->photo) }}" alt="Current home photo" class="w-full h-40 object-cover rounded-xl mb-3">
                         @endif
                         <input type="file" id="home_photo" name="home_photo" accept="image/*"
                             class="w-full rounded-xl border-gray-300 file:mr-4 file:rounded-lg file:border-0 file:bg-lavender-100 file:text-lavender-700 file:font-semibold file:px-4 file:py-2">
-                        <p class="text-xs text-gray-400 mt-1">Dejalo vacío si no querés cambiar la foto actual.</p>
+                        <p class="text-xs text-gray-400 mt-1">Leave empty to keep your current photo.</p>
                         @error('home_photo') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="grid sm:grid-cols-2 gap-5">
                         <div>
-                            <label for="home_roommates_count" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Compañeros de piso *</label>
+                            <label for="home_roommates_count" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Roommates *</label>
                             <input type="number" min="0" id="home_roommates_count" name="home_roommates_count" value="{{ old('home_roommates_count', $artist->home->roommates_count) }}" required
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
                             @error('home_roommates_count') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="home_distance_to_studio_minutes" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Distancia al estudio (min)</label>
+                            <label for="home_distance_to_studio_minutes" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Distance to studio (min)</label>
                             <input type="number" min="0" id="home_distance_to_studio_minutes" name="home_distance_to_studio_minutes" value="{{ old('home_distance_to_studio_minutes', $artist->home->distance_to_studio_minutes) }}"
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
                             @error('home_distance_to_studio_minutes') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
@@ -238,19 +237,19 @@
 
                     <div class="grid sm:grid-cols-2 gap-5">
                         <div>
-                            <label for="home_transport_type" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Cómo se llega *</label>
+                            <label for="home_transport_type" class="block font-sans font-semibold text-sm text-gray-700 mb-1">How to get there *</label>
                             <select id="home_transport_type" name="home_transport_type" required
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
-                                <option value="">Elegí una opción</option>
-                                <option value="caminando" @selected(old('home_transport_type', $artist->home->transport_type) == 'caminando')>Caminando</option>
-                                <option value="transporte_publico" @selected(old('home_transport_type', $artist->home->transport_type) == 'transporte_publico')>Transporte público</option>
-                                <option value="auto" @selected(old('home_transport_type', $artist->home->transport_type) == 'auto')>Auto</option>
+                                <option value="">Choose an option</option>
+                                <option value="caminando" @selected(old('home_transport_type', $artist->home->transport_type) == 'caminando')>Walking</option>
+                                <option value="transporte_publico" @selected(old('home_transport_type', $artist->home->transport_type) == 'transporte_publico')>Public transport</option>
+                                <option value="auto" @selected(old('home_transport_type', $artist->home->transport_type) == 'auto')>Car</option>
                             </select>
                             @error('home_transport_type') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label for="home_transport_cost" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Costo de transporte</label>
+                            <label for="home_transport_cost" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Transport cost</label>
                             <input type="number" step="0.01" id="home_transport_cost" name="home_transport_cost" value="{{ old('home_transport_cost', $artist->home->transport_cost) }}"
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
                             @error('home_transport_cost') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
@@ -258,7 +257,7 @@
                     </div>
 
                     <div>
-                        <label for="home_access_instructions" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Instrucciones de acceso</label>
+                        <label for="home_access_instructions" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Access instructions</label>
                         <textarea id="home_access_instructions" name="home_access_instructions" rows="2"
                             class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">{{ old('home_access_instructions', $artist->home->access_instructions) }}</textarea>
                         @error('home_access_instructions') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
@@ -268,7 +267,7 @@
 
             <button type="submit"
                 class="w-full font-sans font-extrabold text-lg bg-lima-300 hover:bg-lima-400 text-gray-900 rounded-2xl py-4 shadow-sm transition">
-                Guardar cambios
+                Save changes
             </button>
         </form>
     </div>

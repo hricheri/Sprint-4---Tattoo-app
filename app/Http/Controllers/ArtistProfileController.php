@@ -44,7 +44,8 @@ class ArtistProfileController extends Controller
         $offersAllMustHaves = $this->offersAllMustHaves($artist);
 
         $myArtist = Auth::user()->artist;
-        $canSeeSensitiveInfo = $myArtist && Swap::isConfirmedBetween($myArtist->id, $artist->id);
+        $confirmedSwap = $myArtist ? Swap::confirmedSwapBetween($myArtist->id, $artist->id) : null;
+        $canSeeSensitiveInfo = $confirmedSwap && $confirmedSwap->bothPromosSent();
 
         return view('artist-profile.public-show', compact('artist', 'offersAllMustHaves', 'canSeeSensitiveInfo'));
     }

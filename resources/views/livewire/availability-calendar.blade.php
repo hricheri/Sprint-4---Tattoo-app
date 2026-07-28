@@ -1,19 +1,4 @@
 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-    @if ($compareArtistId)
-        <div class="mb-6 bg-lavender-50 border border-lavender-200 rounded-xl p-4">
-            <p class="font-sans text-sm text-lavender-700">
-                Days ringed in purple are already marked available by
-                <span class="font-bold">{{ $compareArtistName ?? 'this artist' }}</span>.
-                @if ($highlightStart)
-                    Try to match your availability with the requested range:
-                    <span class="font-bold">{{ \Carbon\Carbon::parse($highlightStart)->format('M j') }}</span>
-                    –
-                    <span class="font-bold">{{ \Carbon\Carbon::parse($highlightEnd)->format('M j, Y') }}</span>.
-                @endif
-            </p>
-        </div>
-    @endif
-
     <div class="flex items-center justify-between mb-6">
         <button wire:click="previousMonth" @disabled(!$canGoBack)
             class="font-sans font-bold text-gray-500 hover:text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed">
@@ -41,42 +26,105 @@
                 $isConfirmed = in_array($dateStr, $confirmedDates);
                 $isAvailable = in_array($dateStr, $myAvailableDates);
                 $isTheirs = $compareArtistId && in_array($dateStr, $theirAvailableDates);
+                $isOverlap = $isAvailable && $isTheirs;
+                $isMineOnly = $isAvailable && !$isTheirs;
+                $isTheirsOnly = $isTheirs && !$isAvailable;
+                $confirmedInfo = $confirmedSwapByDate[$dateStr] ?? null;
             @endphp
 
-            <button
-                @if (!$isPast && !$isConfirmed) wire:click="toggleDate('{{ $dateStr }}')" @endif
-                @disabled($isPast || $isConfirmed)
-                class="aspect-square rounded-xl font-sans text-sm font-semibold transition relative
-                    {{ !$isCurrentMonth ? 'text-gray-300' : 'text-gray-700' }}
-                    {{ $isPast ? 'opacity-30 cursor-not-allowed' : '' }}
-                    {{ $isConfirmed ? 'bg-lavender-300 text-gray-900 cursor-not-allowed' : '' }}
-                    {{ $isAvailable && !$isConfirmed ? 'bg-lima-300 text-gray-900' : '' }}
-                    {{ $isTheirs && !$isConfirmed ? 'ring-2 ring-lavender-700' : '' }}
-                    {{ !$isAvailable && !$isConfirmed && !$isPast ? 'hover:bg-gray-100 border border-gray-200' : '' }}
-                ">
-                {{ $day->day }}
-            </button>
+            @if ($isConfirmed && $confirmedInfo)
+                <a href="{{ route('swaps.index') }}"
+                    title="Going to {{ $confirmedInfo['city'] }} — click for details"
+                    class="aspect-square rounded-xl font-sans text-sm font-semibold transition relative flex items-center justify-center bg-lavender-500 text-white hover:bg-lavender-600 group">
+                    {{ $day->day }}
+                    <span class="pointer-events-none absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-900 text-white text-xs px-2 py-1 opacity-0 group-hover:opacity-100 transition z-10">
+                        Going to {{ $confirmedInfo['city'] }}
+                    </span>
+                </a>
+            @else
+                <button
+                    @if (!$isPast) wire:click="toggleDate('{{ $dateStr }}')" @endif
+                    @disabled($isPast)
+                    class="aspect-square rounded-xl font-sans text-sm font-semibold transition relative
+                        {{ $isOverlap ? 'bg-lavender-100' : '' }}
+                        {{ $isMineOnly ? 'bg-lima-100' : '' }}
+                        {{ $isTheirsOnly ? 'ring-2 ring-lavender-500' : '' }}
+                        {{ !$isCurrentMonth ? 'text-gray-300' : 'text-gray-700' }}
+                        {{ $isPast ? 'opacity-30 cursor-not-allowed' : '' }}
+                        {{ !$isAvailable && !$isTheirs && !$isPast ? 'hover:bg-gray-100' : '' }}
+                    ">
+                    {{ $day->day }}
+                </button>
+            @endif
         @endforeach
     </div>
 
-    <div class="flex items-center justify-between mt-6">
-        <div class="flex gap-4 text-xs font-sans flex-wrap">
+    <div class="flex items-center gap-4 text-xs font-sans flex-wrap mt-6">
+        <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-full bg-lima-100"></span> My availability
+        </div>
+        @if ($compareArtistId)
             <div class="flex items-center gap-1.5">
-                <span class="w-3 h-3 rounded-full bg-lima-300"></span> Available
+                <span class="w-3 h-3 rounded-full ring-2 ring-lavender-500"></span> Their availability
             </div>
             <div class="flex items-center gap-1.5">
-                <span class="w-3 h-3 rounded-full bg-lavender-300"></span> Confirmed swap
+                <span class="w-3 h-3 rounded-full bg-lavender-100"></span> Possible swap dates
             </div>
-            @if ($compareArtistId)
-                <div class="flex items-center gap-1.5">
-                    <span class="w-3 h-3 rounded-full ring-2 ring-lavender-700"></span> Their availability
-                </div>
+        @endif
+        @if (count($confirmedDates) > 0)
+            <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-lavender-500"></span> Confirmed swap
+            </div>
+        @endif
+    </div>
+
+    @if ($swap)
+        @php
+            $myArtistId = auth()->user()->artist->id;
+            $iConfirmed = $swap->myConfirmed($myArtistId);
+        @endphp
+
+        <div class="mt-6 rounded-xl p-4 bg-gray-50 border border-gray-200">
+            @if ($swap->isAwaitingAvailability())
+                <p class="font-sans text-sm text-gray-700">
+                    Mark the days you'd be available to swap with <span class="font-bold">{{ $compareArtistName }}</span>.
+                    Days ringed in purple are already marked available by them — try to overlap with those.
+                </p>
+            @elseif ($swap->isAwaitingConfirmation())
+                <p class="font-sans font-bold text-gray-900 mb-1">
+                    ✓ Matching dates found: {{ $swap->start_date->format('M j') }} – {{ $swap->end_date->format('M j, Y') }}
+                </p>
+                <p class="font-sans text-sm text-gray-600 mb-3">
+                    @if ($iConfirmed)
+                        You've confirmed these dates. Waiting for {{ $compareArtistName }} to confirm too.
+                    @else
+                        Both you and {{ $compareArtistName }} are available on all these days. Confirm to lock in the swap.
+                    @endif
+                </p>
+                @unless ($iConfirmed)
+                    <div class="flex gap-2">
+                        <button wire:click="confirmSwapDates" class="font-sans font-extrabold text-sm bg-lavender-500 hover:bg-lavender-600 text-white rounded-full px-5 py-2 transition">
+                            Confirm these dates
+                        </button>
+                        <button wire:click="declineSwap" class="font-sans font-semibold text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-5 py-2 transition">
+                            Decline
+                        </button>
+                    </div>
+                @endunless
+            @elseif ($swap->status === 'aceptado')
+                <p class="font-sans font-bold text-gray-900">
+                    ✈️ This swap is confirmed: {{ $swap->start_date->format('M j') }} – {{ $swap->end_date->format('M j, Y') }}
+                </p>
             @endif
         </div>
+    @endif
 
-        <a href="{{ route('explore') }}"
-            class="font-sans font-extrabold text-sm bg-gray-900 hover:bg-gray-800 text-white rounded-full px-5 py-2 transition">
-            Done
-        </a>
+    <div class="flex justify-end mt-6">
+        @unless ($swap && !$swap->isAwaitingAvailability())
+            <a href="{{ route('swaps.index') }}"
+                class="font-sans font-extrabold text-sm bg-gray-900 hover:bg-gray-800 text-white rounded-full px-5 py-2 transition whitespace-nowrap">
+                {{ $swap ? 'Send' : 'Done' }}
+            </a>
+        @endunless
     </div>
 </div>

@@ -13,7 +13,6 @@
     <div class="max-w-sm mx-auto py-10 px-4">
         <div class="bg-white rounded-3xl shadow-lg overflow-hidden border border-gray-100">
 
-            {{-- Studio photo --}}
             <div class="relative h-48 bg-gray-100">
                 @if ($artist->studio->photo)
                     <img src="{{ photo_url($artist->studio->photo) }}" alt="Studio" class="w-full h-full object-cover">
@@ -29,7 +28,6 @@
                 </svg>
             </div>
 
-            {{-- Home photo --}}
             <div class="relative h-48 bg-gray-100 -mt-6">
                 @if ($artist->home->photo)
                     <img src="{{ photo_url($artist->home->photo) }}" alt="Home" class="w-full h-full object-cover">
@@ -39,7 +37,6 @@
                 </span>
             </div>
 
-            {{-- Artist info --}}
             <div class="p-6">
                 <div class="flex items-center gap-3">
                     @if ($artist->profile_photo)
@@ -55,7 +52,6 @@
                     <p class="font-sans text-sm text-gray-600 mt-3">{{ $artist->bio }}</p>
                 @endif
 
-                {{-- Studio features: ALL of them --}}
                 <div class="mt-4">
                     <p class="font-sans font-bold text-xs uppercase tracking-wide text-gray-500 mb-1.5">Studio offers</p>
                     <div class="flex flex-wrap gap-1.5">
@@ -70,7 +66,6 @@
                     </div>
                 </div>
 
-                {{-- What they're looking for --}}
                 @if ($artist->featurePreferences->isNotEmpty())
                     <div class="mt-4">
                         <p class="font-sans font-bold text-xs uppercase tracking-wide text-gray-500 mb-1.5">Looking for</p>
@@ -82,7 +77,6 @@
                     </div>
                 @endif
 
-                {{-- Home details (non-sensitive) --}}
                 <div class="mt-5 pt-5 border-t border-gray-100">
                     <p class="font-sans font-bold text-xs uppercase tracking-wide text-gray-500 mb-2">Home</p>
                     <ul class="font-sans text-sm text-gray-600 space-y-1">
@@ -93,7 +87,6 @@
                     </ul>
                 </div>
 
-                {{-- Sensitive info: only after a confirmed swap --}}
                 @if ($canSeeSensitiveInfo)
                     <div class="mt-5 pt-5 border-t border-gray-100 bg-lima-50 rounded-xl p-4 -mx-2">
                         <p class="font-sans font-bold text-xs uppercase tracking-wide text-lima-700 mb-2">✓ Swap confirmed — access details</p>
@@ -107,7 +100,7 @@
                     </div>
                 @else
                     <p class="font-sans text-xs text-gray-400 mt-4">
-                        Exact address and access instructions are shared once a swap is confirmed.
+                        Exact address and access instructions are shared once both guest announcements are sent.
                     </p>
                 @endif
             </div>

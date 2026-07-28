@@ -24,6 +24,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/artist-profile', [ArtistProfileController::class, 'destroy'])->name('artist-profile.destroy');
     Route::get('/artist-profile/preview', [ArtistProfileController::class, 'preview'])->name('artist-profile.preview');
 
+    Route::get('/artists/{artist}', [ArtistProfileController::class, 'publicShow'])->name('artists.show');
+
     Route::get('/explore', [ArtistBrowseController::class, 'explore'])->name('explore');
     Route::post('/likes', [ArtistBrowseController::class, 'like'])->name('likes.store');
     Route::get('/favorites', [ArtistBrowseController::class, 'favorites'])->name('favorites');

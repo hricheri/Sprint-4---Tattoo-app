@@ -16,9 +16,34 @@ class AvailabilityCalendar extends Component
 
     public $confirmedDates = [];
 
+    public $theirAvailableDates = [];
+
+    public $compareArtistId = null;
+
+    public $compareArtistName = null;
+
+    public $highlightStart = null;
+
+    public $highlightEnd = null;
+
     public function mount()
     {
-        $this->currentMonth = now()->startOfMonth();
+        $highlightStart = request()->query('highlight_start');
+        $highlightEnd = request()->query('highlight_end');
+        $compareArtistId = request()->query('compare_artist_id');
+
+        if ($compareArtistId) {
+            $this->compareArtistId = (int) $compareArtistId;
+        }
+
+        if ($highlightStart) {
+            $this->highlightStart = $highlightStart;
+            $this->highlightEnd = $highlightEnd ?: $highlightStart;
+            $this->currentMonth = Carbon::parse($highlightStart)->startOfMonth();
+        } else {
+            $this->currentMonth = now()->startOfMonth();
+        }
+
         $this->loadDates();
     }
 
@@ -30,6 +55,16 @@ class AvailabilityCalendar extends Component
             ->pluck('date')
             ->map(fn ($date) => $date->format('Y-m-d'))
             ->toArray();
+
+        if ($this->compareArtistId) {
+            $compareArtist = \App\Models\Artist::with('user')->find($this->compareArtistId);
+            $this->compareArtistName = $compareArtist?->user->name;
+
+            $this->theirAvailableDates = Availability::where('artist_id', $this->compareArtistId)
+                ->pluck('date')
+                ->map(fn ($date) => $date->format('Y-m-d'))
+                ->toArray();
+        }
 
         $confirmedSwaps = Swap::where('status', 'aceptado')
             ->where(function ($query) use ($artist) {

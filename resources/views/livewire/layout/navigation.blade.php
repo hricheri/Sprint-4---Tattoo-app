@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\Actions\Logout;
-use App\Models\Artist;
 use App\Models\Like;
 use App\Models\Swap;
 use Livewire\Volt\Component;
@@ -15,19 +14,13 @@ new class extends Component
         $artist = auth()->user()->artist ?? null;
 
         if ($artist) {
-            $matchedIds = Like::where('liker_artist_id', $artist->id)
-                ->whereIn('liked_artist_id', Like::where('liked_artist_id', $artist->id)->pluck('liker_artist_id'))
-                ->pluck('liked_artist_id');
+            $newMatchesCount = Like::pendingMatchArtistIdsFor($artist->id)->count();
 
-            $existingSwapArtistIds = Swap::where('artist_a_id', $artist->id)
-                ->orWhere('artist_b_id', $artist->id)
-                ->get()
-                ->flatMap(fn ($s) => [$s->artist_a_id, $s->artist_b_id])
-                ->unique();
-
-            $this->swapsAlertCount = Artist::whereIn('id', $matchedIds)
-                ->whereNotIn('id', $existingSwapArtistIds)
+            $pendingActionCount = Swap::where('status', 'pendiente')
+                ->where('artist_b_id', $artist->id)
                 ->count();
+
+            $this->swapsAlertCount = $newMatchesCount + $pendingActionCount;
         }
     }
 

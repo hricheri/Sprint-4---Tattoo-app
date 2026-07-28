@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Artist;
+use App\Models\Availability;
 use App\Models\Like;
 use App\Models\Swap;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,12 +30,28 @@ class SwapController extends Controller
         $pendingSent = $swaps->where('status', 'pendiente')->where('artist_a_id', $myArtist->id);
         $confirmed = $swaps->where('status', 'aceptado');
 
-        $matchedIds = Like::where('liker_artist_id', $myArtist->id)
-            ->whereIn('liked_artist_id', Like::where('liked_artist_id', $myArtist->id)->pluck('liker_artist_id'))
-            ->pluck('liked_artist_id');
+        $myAvailableDates = Availability::where('artist_id', $myArtist->id)
+            ->pluck('date')
+            ->map(fn ($date) => $date->format('Y-m-d'))
+            ->toArray();
 
-        $swapArtistIds = $swaps->flatMap(fn ($s) => [$s->artist_a_id, $s->artist_b_id])->unique();
-        $newMatches = Artist::whereIn('id', $matchedIds)->whereNotIn('id', $swapArtistIds)->with('user')->get();
+        foreach ($pendingReceived as $swap) {
+            $totalDays = 0;
+            $availableDays = 0;
+
+            foreach (CarbonPeriod::create($swap->start_date, $swap->end_date) as $day) {
+                $totalDays++;
+                if (in_array($day->format('Y-m-d'), $myAvailableDates)) {
+                    $availableDays++;
+                }
+            }
+
+            $swap->total_days = $totalDays;
+            $swap->available_days = $availableDays;
+        }
+
+        $newMatchIds = Like::pendingMatchArtistIdsFor($myArtist->id);
+        $newMatches = Artist::whereIn('id', $newMatchIds)->with('user')->get();
 
         return view('swaps.index', compact('pendingReceived', 'pendingSent', 'confirmed', 'newMatches', 'myArtist'));
     }

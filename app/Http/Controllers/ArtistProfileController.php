@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Artist;
 use App\Models\Feature;
+use App\Models\Swap;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,6 +35,18 @@ class ArtistProfileController extends Controller
         $offersAllMustHaves = $this->offersAllMustHaves($artist);
 
             return view('artist-profile.preview', compact('artist', 'offersAllMustHaves'));
+    }
+
+    public function publicShow(Artist $artist)
+    {
+        $artist->load(['studio.features', 'home', 'featurePreferences']);
+
+        $offersAllMustHaves = $this->offersAllMustHaves($artist);
+
+        $myArtist = Auth::user()->artist;
+        $canSeeSensitiveInfo = $myArtist && Swap::isConfirmedBetween($myArtist->id, $artist->id);
+
+        return view('artist-profile.public-show', compact('artist', 'offersAllMustHaves', 'canSeeSensitiveInfo'));
     }
 
     private function offersAllMustHaves(Artist $artist): bool

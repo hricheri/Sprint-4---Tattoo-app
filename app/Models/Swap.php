@@ -33,4 +33,17 @@ class Swap extends Model
     {
         return $this->belongsTo(Artist::class, 'artist_b_id');
     }
+
+    public static function isConfirmedBetween(int $artistIdA, int $artistIdB): bool
+    {
+        return static::where('status', 'aceptado')
+            ->where(function ($q) use ($artistIdA, $artistIdB) {
+                $q->where(function ($q2) use ($artistIdA, $artistIdB) {
+                    $q2->where('artist_a_id', $artistIdA)->where('artist_b_id', $artistIdB);
+                })->orWhere(function ($q2) use ($artistIdA, $artistIdB) {
+                    $q2->where('artist_a_id', $artistIdB)->where('artist_b_id', $artistIdA);
+                });
+            })
+            ->exists();
+    }
 }

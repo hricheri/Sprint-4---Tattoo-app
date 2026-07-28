@@ -26,6 +26,7 @@
                                 <div>
                                     <p class="font-sans font-bold text-gray-900">{{ $artist->user->name }}</p>
                                     <p class="font-sans text-sm text-gray-500">You both liked each other!</p>
+                                    <a href="{{ route('artists.show', $artist) }}" class="font-sans text-xs text-lavender-600 hover:underline">View full profile →</a>
                                 </div>
                             </div>
                             <a href="{{ route('swaps.create', $artist) }}"
@@ -70,6 +71,27 @@
                                     </form>
                                 </div>
                             </div>
+
+                            <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-2">
+                                <a href="{{ route('artists.show', $swap->artistA) }}"
+                                    class="font-sans font-semibold text-sm text-lavender-600 hover:underline">
+                                    View full profile →
+                                </a>
+
+                                <a href="{{ route('availability') }}?highlight_start={{ $swap->start_date->format('Y-m-d') }}&highlight_end={{ $swap->end_date->format('Y-m-d') }}&compare_artist_id={{ $swap->artistA->id }}"
+                                    class="font-sans font-bold text-xs rounded-full px-3 py-1.5 transition
+                                        {{ $swap->available_days === $swap->total_days ? 'bg-lima-300 text-gray-900 hover:bg-lima-400' : '' }}
+                                        {{ $swap->available_days > 0 && $swap->available_days < $swap->total_days ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : '' }}
+                                        {{ $swap->available_days === 0 ? 'bg-red-50 text-red-600 hover:bg-red-100' : '' }}">
+                                    @if ($swap->available_days === $swap->total_days)
+                                        ✓ All {{ $swap->total_days }} days already match — view calendar →
+                                    @elseif ($swap->available_days > 0)
+                                        {{ $swap->available_days }} of {{ $swap->total_days }} days already match — view which ones →
+                                    @else
+                                        ⚠ No days match yet — mark your availability →
+                                    @endif
+                                </a>
+                            </div>
                         </div>
                     @endforeach
                 </div>
@@ -89,6 +111,10 @@
                             <div>
                                 <p class="font-sans font-bold text-gray-900">{{ $swap->artistB->user->name }}</p>
                                 <p class="font-sans text-sm text-gray-500">{{ $swap->start_date->format('M j') }} – {{ $swap->end_date->format('M j, Y') }} · Waiting for response</p>
+                                <div class="flex gap-3 mt-1">
+                                    <a href="{{ route('artists.show', $swap->artistB) }}" class="font-sans text-xs text-lavender-600 hover:underline">View full profile →</a>
+                                    <a href="{{ route('availability') }}?highlight_start={{ $swap->start_date->format('Y-m-d') }}&highlight_end={{ $swap->end_date->format('Y-m-d') }}&compare_artist_id={{ $swap->artistB->id }}" class="font-sans text-xs text-lavender-600 hover:underline">Compare availability →</a>
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -128,6 +154,10 @@
                             </div>
 
                             <div x-show="open" class="mt-5 pt-5 border-t border-lima-200 space-y-4">
+                                <a href="{{ route('artists.show', $otherArtist) }}" class="inline-block font-sans font-extrabold text-sm bg-lavender-500 hover:bg-lavender-600 text-white rounded-full px-5 py-2 transition">
+                                    View full profile, photos & materials →
+                                </a>
+
                                 <div>
                                     <p class="font-sans font-bold text-xs uppercase tracking-wide text-gray-500 mb-1">Their studio</p>
                                     <p class="font-sans text-sm text-gray-700">{{ $otherArtist->studio->address }}</p>
@@ -144,10 +174,11 @@
                                 <div class="bg-white rounded-xl p-4">
                                     <p class="font-sans font-bold text-xs uppercase tracking-wide text-lavender-600 mb-1">How this works</p>
                                     <p class="font-sans text-sm text-gray-600">
-                                        Once your session with a guest client is done, send a photo of the finished tattoo to
-                                        {{ $otherArtist->user->name }} ({{ $otherArtist->contact_email }}) within 48 hours, so
-                                        they can post it on their studio's social media. Do the same for any work they send you.
-                                        If you need anything during your stay, reach out via the contact info above.
+                                        Before your stay, send {{ $otherArtist->user->name }} a promo graphic announcing you as
+                                        their guest artist in {{ $otherArtist->studio->city }}, so they can share it on their
+                                        studio's social media — that way their local followers know to book with you while
+                                        you're in town. Do the same for the graphic they send you. If you need anything during
+                                        your stay, reach out via the contact info above.
                                     </p>
                                 </div>
                             </div>

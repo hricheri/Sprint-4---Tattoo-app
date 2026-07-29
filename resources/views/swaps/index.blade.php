@@ -156,7 +156,7 @@
                             $bothSent = $swap->bothPromosSent();
                             $urgent = $swap->isPromoReminderUrgent() && !$iSentPromo;
                         @endphp
-                        <div x-data="{ open: false }" class="bg-lavender-50 border-2 border-lavender-300 rounded-2xl p-5">
+                        <div class="bg-lavender-50 border-2 border-lavender-300 rounded-2xl p-5">
                             <div class="flex items-center justify-between gap-4">
                                 <div>
                                     <p class="font-sans font-black text-lg text-gray-900">
@@ -166,40 +166,14 @@
                                         {{ $swap->start_date->format('M j') }} – {{ $swap->end_date->format('M j, Y') }} with {{ $otherArtist->user->name }}
                                     </p>
                                 </div>
-                                <button @click="open = !open"
+                                <a href="{{ route('artists.show', $otherArtist) }}"
                                     class="font-sans font-extrabold text-sm bg-lavender-300 hover:bg-lavender-400 text-gray-900 rounded-full px-5 py-2 transition shrink-0 whitespace-nowrap">
-                                    <span x-show="!open">View details</span>
-                                    <span x-show="open">Hide details</span>
-                                </button>
+                                    View details →
+                                </a>
                             </div>
 
-                            {{-- Promo status — always visible, not hidden behind accordion --}}
-                            <div class="mt-4">
+                            <div class="mt-5 pt-5 border-t border-lavender-200 space-y-4">
                                 @if ($bothSent)
-                                    <span class="font-sans font-bold text-xs bg-lima-100 text-lima-700 rounded-full px-3 py-1.5 inline-block">
-                                        ✓ Both guest announcements sent
-                                    </span>
-                                @elseif ($iSentPromo)
-                                    <span class="font-sans font-bold text-xs bg-gray-100 text-gray-500 rounded-full px-3 py-1.5 inline-block">
-                                        You sent yours — waiting for {{ $otherArtist->user->name }}
-                                    </span>
-                                @else
-                                    <form method="POST" action="{{ route('swaps.promo-sent', $swap) }}">
-                                        @csrf
-                                        <button class="font-sans font-extrabold text-sm rounded-full px-4 py-2 transition
-                                            {{ $urgent ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-lima-300 hover:bg-lima-400 text-gray-900' }}">
-                                            {{ $urgent ? '⏰ Reminder: send your guest announcement' : '📸 Send your guest announcement' }}
-                                        </button>
-                                    </form>
-                                @endif
-                            </div>
-
-                            <div x-show="open" class="mt-5 pt-5 border-t border-lavender-200 space-y-4">
-                                @if ($bothSent)
-                                    <a href="{{ route('artists.show', $otherArtist) }}" class="inline-block font-sans font-extrabold text-sm bg-lima-300 hover:bg-lima-400 text-gray-900 rounded-full px-5 py-2 transition">
-                                        View full profile, photos & materials →
-                                    </a>
-
                                     <div>
                                         <p class="font-sans font-bold text-xs uppercase tracking-wide text-gray-500 mb-1">Their studio</p>
                                         <p class="font-sans text-sm text-gray-700">{{ $otherArtist->studio->address }}</p>
@@ -220,7 +194,7 @@
                                 @endif
 
                                 <div class="bg-white rounded-xl p-4">
-                                    <p class="font-sans font-bold text-xs uppercase tracking-wide text-lavender-600 mb-1">How this works</p>
+                                    <p class="font-sans font-bold text-xs uppercase tracking-wide text-lavender-600 mb-1">Guest announcement</p>
                                     <p class="font-sans text-sm text-gray-600">
                                         Send {{ $otherArtist->user->name }} a promo graphic announcing you as their guest artist
                                         in {{ $otherArtist->studio->city }}, so they can share it on their studio's social media —
@@ -228,6 +202,51 @@
                                         send yours, you'll each get the other's exact address and access instructions.
                                     </p>
                                 </div>
+
+                                @if ($bothSent)
+                                    <span class="font-sans font-bold text-xs bg-lima-100 text-lima-700 rounded-full px-3 py-1.5 inline-block">
+                                        ✓ Guest announcement sent!
+                                    </span>
+                                @elseif ($iSentPromo)
+                                    <span class="font-sans font-bold text-xs bg-gray-100 text-gray-500 rounded-full px-3 py-1.5 inline-block">
+                                        You sent yours — waiting for {{ $otherArtist->user->name }}
+                                    </span>
+                                @endif
+
+                                @if (!$bothSent && !$iSentPromo)
+                                    <div class="bg-lima-50 border border-lima-200 rounded-xl p-4">
+                                        <p class="font-sans font-bold text-xs uppercase tracking-wide text-lima-700 mb-1">Send it to</p>
+                                        <p class="font-sans text-sm text-gray-800 font-semibold">{{ $otherArtist->contact_email }}</p>
+                                    </div>
+
+                                    <div x-data="{ confirming: false }">
+                                        <button
+                                            x-show="!confirming"
+                                            @click="confirming = true"
+                                            class="font-sans font-extrabold text-sm rounded-full px-4 py-2 transition
+                                                {{ $urgent ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-lima-300 hover:bg-lima-400 text-gray-900' }}">
+                                            {{ $urgent ? '⏰ Reminder: send your guest announcement' : '📸 Send your guest announcement' }}
+                                        </button>
+
+                                        <div x-show="confirming" x-cloak class="bg-gray-50 border border-gray-200 rounded-xl p-3 max-w-sm">
+                                            <p class="font-sans text-sm text-gray-700 mb-3">
+                                                Once you've sent the post and caption for the social media guest announcement,
+                                                check the confirmation box below.
+                                            </p>
+                                            <div class="flex gap-2">
+                                                <form method="POST" action="{{ route('swaps.promo-sent', $swap) }}">
+                                                    @csrf
+                                                    <button class="font-sans font-extrabold text-sm bg-lima-300 hover:bg-lima-400 text-gray-900 rounded-full px-4 py-2 transition">
+                                                        ✓ Confirm sent
+                                                    </button>
+                                                </form>
+                                                <button @click="confirming = false" type="button" class="font-sans font-semibold text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-4 py-2 transition">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endforeach

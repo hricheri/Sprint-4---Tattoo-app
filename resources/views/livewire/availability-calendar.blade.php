@@ -92,19 +92,19 @@
                 </p>
             @elseif ($swap->isAwaitingConfirmation())
                 <p class="font-sans font-bold text-gray-900 mb-1">
-                    ✓ Matching dates found: {{ $swap->start_date->format('M j') }} – {{ $swap->end_date->format('M j, Y') }}
+                    ✓ Currently matching: {{ $swap->start_date->format('M j') }} – {{ $swap->end_date->format('M j, Y') }}
                 </p>
                 <p class="font-sans text-sm text-gray-600 mb-3">
                     @if ($iConfirmed)
-                        You've confirmed these dates. Waiting for {{ $compareArtistName }} to confirm too.
+                        You've agreed to this range for now. If {{ $compareArtistName }} marks more overlapping days, you'll both need to re-confirm the new range.
                     @else
-                        Both you and {{ $compareArtistName }} are available on all these days. Confirm to lock in the swap.
+                        Both you and {{ $compareArtistName }} are available on all these days right now. If either of you adds more overlapping days later, this will update and you'll need to confirm again.
                     @endif
                 </p>
                 @unless ($iConfirmed)
                     <div class="flex gap-2">
                         <button wire:click="confirmSwapDates" class="font-sans font-extrabold text-sm bg-lavender-500 hover:bg-lavender-600 text-white rounded-full px-5 py-2 transition">
-                            Confirm these dates
+                            Agree to this range
                         </button>
                         <button wire:click="declineSwap" class="font-sans font-semibold text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-5 py-2 transition">
                             Decline

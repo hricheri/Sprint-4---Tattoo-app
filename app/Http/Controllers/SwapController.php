@@ -84,7 +84,7 @@ class SwapController extends Controller
         $myArtist = Auth::user()->artist;
         $swap->markPromoSentFor($myArtist->id);
 
-        return redirect()->route('swaps.index')->with('status', 'Nice — your guest announcement is marked as sent!');
+        return redirect()->route('swaps.index')->with('status', "Announcement underway! Now let the clients roll in!");
     }
 
     private function authorizeParticipant(Swap $swap): void

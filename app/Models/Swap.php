@@ -21,8 +21,6 @@ class Swap extends Model
         'promo_sent_by_a',
         'promo_sent_by_b',
         'includes_money_exchange',
-        'promo_image',
-        'promo_caption',
     ];
 
     protected $casts = [
@@ -65,10 +63,6 @@ class Swap extends Model
             ->first();
     }
 
-    /**
-     * Crea (o reusa, si ya existe uno activo) un swap "pendiente" entre dos
-     * artistas, sin fechas todavía, y calcula la intersección inicial.
-     */
     public static function startBetween(Artist $initiator, Artist $other): self
     {
         $existing = static::where('status', 'pendiente')

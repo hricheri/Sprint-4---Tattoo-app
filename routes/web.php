@@ -24,16 +24,18 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/artist-profile', [ArtistProfileController::class, 'destroy'])->name('artist-profile.destroy');
     Route::get('/artist-profile/preview', [ArtistProfileController::class, 'preview'])->name('artist-profile.preview');
 
+    Route::get('/artists/{artist}', [ArtistProfileController::class, 'publicShow'])->name('artists.show');
+
     Route::get('/explore', [ArtistBrowseController::class, 'explore'])->name('explore');
     Route::post('/likes', [ArtistBrowseController::class, 'like'])->name('likes.store');
     Route::get('/favorites', [ArtistBrowseController::class, 'favorites'])->name('favorites');
     Route::post('/explore/dismiss', [ArtistBrowseController::class, 'dismiss'])->name('explore.dismiss');
 
     Route::get('/swaps', [SwapController::class, 'index'])->name('swaps.index');
-    Route::get('/swaps/create/{artist}', [SwapController::class, 'create'])->name('swaps.create');
-    Route::post('/swaps', [SwapController::class, 'store'])->name('swaps.store');
-    Route::post('/swaps/{swap}/accept', [SwapController::class, 'accept'])->name('swaps.accept');
+    Route::post('/swaps/start/{artist}', [SwapController::class, 'start'])->name('swaps.start');
+    Route::post('/swaps/{swap}/confirm-dates', [SwapController::class, 'confirmDates'])->name('swaps.confirm-dates');
     Route::post('/swaps/{swap}/reject', [SwapController::class, 'reject'])->name('swaps.reject');
+    Route::post('/swaps/{swap}/promo-sent', [SwapController::class, 'markPromoSent'])->name('swaps.promo-sent');
 
     Route::view('/availability', 'availability')->name('availability');
 });

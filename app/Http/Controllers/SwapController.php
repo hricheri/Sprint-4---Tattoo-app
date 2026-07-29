@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Artist;
+use App\Models\Availability;
 use App\Models\Like;
 use App\Models\Swap;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SwapController extends Controller
@@ -24,57 +24,48 @@ class SwapController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        $pendingReceived = $swaps->where('status', 'pendiente')->where('artist_b_id', $myArtist->id);
-        $pendingSent = $swaps->where('status', 'pendiente')->where('artist_a_id', $myArtist->id);
+        $active = $swaps->where('status', 'pendiente');
+
+        $awaitingAvailability = $active->filter(fn (Swap $s) => $s->isAwaitingAvailability());
+        $awaitingConfirmation = $active->filter(fn (Swap $s) => $s->isAwaitingConfirmation());
         $confirmed = $swaps->where('status', 'aceptado');
 
-        $matchedIds = Like::where('liker_artist_id', $myArtist->id)
-            ->whereIn('liked_artist_id', Like::where('liked_artist_id', $myArtist->id)->pluck('liker_artist_id'))
-            ->pluck('liked_artist_id');
+        $newMatchIds = Like::pendingMatchArtistIdsFor($myArtist->id);
+        $newMatches = Artist::whereIn('id', $newMatchIds)->with('user')->get();
 
-        $swapArtistIds = $swaps->flatMap(fn ($s) => [$s->artist_a_id, $s->artist_b_id])->unique();
-        $newMatches = Artist::whereIn('id', $matchedIds)->whereNotIn('id', $swapArtistIds)->with('user')->get();
+        $hasSetAvailability = Availability::where('artist_id', $myArtist->id)->exists();
 
-        return view('swaps.index', compact('pendingReceived', 'pendingSent', 'confirmed', 'newMatches', 'myArtist'));
+        return view('swaps.index', compact(
+            'awaitingAvailability',
+            'awaitingConfirmation',
+            'confirmed',
+            'newMatches',
+            'myArtist',
+            'hasSetAvailability'
+        ));
     }
 
-    public function create(Artist $artist)
+    public function start(Artist $artist)
     {
         $myArtist = Auth::user()->artist;
 
-        return view('swaps.create', compact('artist', 'myArtist'));
+        $swap = Swap::startBetween($myArtist, $artist);
+
+        return redirect()->route('availability', ['swap_id' => $swap->id]);
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'artist_b_id' => 'required|exists:artists,id',
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date' => 'required|date|after:start_date',
-            'includes_money_exchange' => 'nullable|boolean',
-        ]);
-
-        $myArtist = Auth::user()->artist;
-
-        Swap::create([
-            'artist_a_id' => $myArtist->id,
-            'artist_b_id' => $validated['artist_b_id'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
-            'status' => 'pendiente',
-            'includes_money_exchange' => $request->boolean('includes_money_exchange'),
-        ]);
-
-        return redirect()->route('swaps.index')->with('status', 'Swap proposal sent!');
-    }
-
-    public function accept(Swap $swap)
+    public function confirmDates(Swap $swap)
     {
         $this->authorizeParticipant($swap);
 
-        $swap->update(['status' => 'aceptado']);
+        $myArtist = Auth::user()->artist;
+        $swap->confirmFor($myArtist->id);
 
-        return redirect()->route('swaps.index')->with('status', 'Swap confirmed! Check your travel calendar below.');
+        $message = $swap->status === 'aceptado'
+            ? 'Swap confirmed! Check your travel calendar below.'
+            : 'Dates confirmed on your side — waiting for the other artist to confirm.';
+
+        return redirect()->route('swaps.index')->with('status', $message);
     }
 
     public function reject(Swap $swap)
@@ -84,6 +75,16 @@ class SwapController extends Controller
         $swap->update(['status' => 'rechazado']);
 
         return redirect()->route('swaps.index')->with('status', 'Swap declined.');
+    }
+
+    public function markPromoSent(Swap $swap)
+    {
+        $this->authorizeParticipant($swap);
+
+        $myArtist = Auth::user()->artist;
+        $swap->markPromoSentFor($myArtist->id);
+
+        return redirect()->route('swaps.index')->with('status', "Announcement underway! Now let the clients roll in!");
     }
 
     private function authorizeParticipant(Swap $swap): void

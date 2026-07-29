@@ -37,7 +37,10 @@
                 @if ($artist->profile_photo)
                     <img src="{{ photo_url($artist->profile_photo) }}" alt="Your profile photo" class="w-16 h-16 rounded-full object-cover">
                 @endif
-                <h2 class="font-sans font-extrabold text-xl text-lavender-700">About you</h2>
+                <div>
+                    <h2 class="font-sans font-extrabold text-xl text-lavender-700">About you</h2>
+                    <p class="font-sans text-sm text-gray-500">{{ $artist->studio->city }}</p>
+                </div>
             </div>
             <p class="font-sans text-gray-700 mb-4">{{ $artist->bio ?: "You haven't added a bio yet." }}</p>
             <div class="flex flex-wrap gap-4 text-sm font-sans text-gray-500">
@@ -57,6 +60,10 @@
             <div class="p-6 sm:p-8">
                 <h2 class="font-sans font-extrabold text-xl text-lavender-700 mb-1">{{ $artist->studio->name }}</h2>
                 <p class="font-sans text-sm text-gray-500 mb-4">{{ $artist->studio->city }}@if($artist->studio->address), {{ $artist->studio->address }}@endif</p>
+
+                @if ($artist->studio->description)
+                    <p class="font-sans text-sm text-gray-600 mb-4">{{ $artist->studio->description }}</p>
+                @endif
 
                 <div class="grid sm:grid-cols-2 gap-3 mb-5 text-sm font-sans">
                     <div class="bg-gray-50 rounded-xl px-4 py-2">
@@ -113,15 +120,21 @@
             <div class="p-6 sm:p-8">
                 <h2 class="font-sans font-extrabold text-xl text-lavender-700 mb-4">Your home</h2>
 
+                @if ($artist->home->description)
+                    <p class="font-sans text-sm text-gray-600 mb-4">{{ $artist->home->description }}</p>
+                @endif
+
                 <div class="grid sm:grid-cols-2 gap-3 text-sm font-sans">
                     <div class="bg-gray-50 rounded-xl px-4 py-2">
                         <span class="text-gray-400">Roommates:</span>
                         <span class="font-semibold text-gray-700">{{ $artist->home->roommates_count }}</span>
                     </div>
-                    <div class="bg-gray-50 rounded-xl px-4 py-2">
-                        <span class="text-gray-400">How to get there:</span>
-                        <span class="font-semibold text-gray-700">{{ str_replace('_', ' ', $artist->home->transport_type) }}</span>
-                    </div>
+                    @if ($artist->home->distance_to_studio_minutes !== null)
+                        <div class="bg-gray-50 rounded-xl px-4 py-2">
+                            <span class="text-gray-400">Distance to studio:</span>
+                            <span class="font-semibold text-gray-700">{{ $artist->home->distance_to_studio_minutes }} min</span>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

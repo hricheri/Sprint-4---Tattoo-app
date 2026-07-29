@@ -11,6 +11,7 @@ class Studio extends Model
     protected $fillable = [
         'artist_id',
         'name',
+        'description',
         'city',
         'address',
         'cost_type',

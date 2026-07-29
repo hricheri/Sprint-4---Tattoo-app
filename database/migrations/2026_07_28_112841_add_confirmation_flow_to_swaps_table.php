@@ -9,15 +9,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('swaps', function (Blueprint $table) {
-            $table->boolean('confirmed_seen_by_a')->default(false)->after('confirmed_by_b');
-            $table->boolean('confirmed_seen_by_b')->default(false)->after('confirmed_seen_by_a');
+            $table->date('start_date')->nullable()->change();
+            $table->date('end_date')->nullable()->change();
+            $table->boolean('confirmed_by_a')->default(false)->after('status');
+            $table->boolean('confirmed_by_b')->default(false)->after('confirmed_by_a');
         });
     }
 
     public function down(): void
     {
         Schema::table('swaps', function (Blueprint $table) {
-            $table->dropColumn(['confirmed_seen_by_a', 'confirmed_seen_by_b']);
+            $table->dropColumn(['confirmed_by_a', 'confirmed_by_b']);
+            $table->date('start_date')->nullable(false)->change();
+            $table->date('end_date')->nullable(false)->change();
         });
     }
 };

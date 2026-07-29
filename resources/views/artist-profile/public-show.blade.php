@@ -53,7 +53,10 @@
                 @endif
 
                 <div class="mt-4">
-                    <p class="font-sans font-bold text-xs uppercase tracking-wide text-gray-500 mb-1.5">Studio offers</p>
+                    <p class="font-sans font-bold text-xs uppercase tracking-wide text-gray-500 mb-1.5">{{ $artist->studio->name }}</p>
+                    @if ($artist->studio->description)
+                        <p class="font-sans text-sm text-gray-600 mb-2">{{ $artist->studio->description }}</p>
+                    @endif
                     <div class="flex flex-wrap gap-1.5">
                         @if ($offersAllMustHaves)
                             <span class="font-sans font-bold text-xs bg-lima-300 text-gray-900 rounded-full px-3 py-1">
@@ -79,10 +82,13 @@
 
                 <div class="mt-5 pt-5 border-t border-gray-100">
                     <p class="font-sans font-bold text-xs uppercase tracking-wide text-gray-500 mb-2">Home</p>
+                    @if ($artist->home->description)
+                        <p class="font-sans text-sm text-gray-600 mb-2">{{ $artist->home->description }}</p>
+                    @endif
                     <ul class="font-sans text-sm text-gray-600 space-y-1">
                         <li>{{ $artist->home->roommates_count }} roommate(s)</li>
                         @if ($artist->home->distance_to_studio_minutes !== null)
-                            <li>{{ $artist->home->distance_to_studio_minutes }} min to studio ({{ str_replace('_', ' ', $artist->home->transport_type) }})</li>
+                            <li>{{ $artist->home->distance_to_studio_minutes }} min to studio</li>
                         @endif
                     </ul>
                 </div>

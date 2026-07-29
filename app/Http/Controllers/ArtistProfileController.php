@@ -86,6 +86,7 @@ class ArtistProfileController extends Controller
             'artist_photo' => 'nullable|image|max:5120',
 
             'studio_name' => 'required|string|max:255',
+            'studio_description' => 'nullable|string|max:1000',
             'studio_city' => 'required|string|max:255',
             'studio_address' => 'nullable|string|max:255',
             'studio_cost_type' => 'required|in:renta_fija,porcentaje,dueño_sin_costo',
@@ -97,9 +98,8 @@ class ArtistProfileController extends Controller
             'studio_photo' => 'nullable|image|max:5120',
 
             'home_roommates_count' => 'required|integer|min:0',
+            'home_description' => 'nullable|string|max:1000',
             'home_distance_to_studio_minutes' => 'nullable|integer|min:0',
-            'home_transport_type' => 'required|in:caminando,transporte_publico,auto',
-            'home_transport_cost' => 'nullable|numeric|min:0',
             'home_access_instructions' => 'nullable|string|max:500',
             'home_photo' => 'nullable|image|max:5120',
 
@@ -125,6 +125,7 @@ class ArtistProfileController extends Controller
 
         $studio = $artist->studio()->create([
             'name' => $validated['studio_name'],
+            'description' => $validated['studio_description'] ?? null,
             'city' => $validated['studio_city'],
             'address' => $validated['studio_address'] ?? null,
             'cost_type' => $validated['studio_cost_type'],
@@ -142,9 +143,8 @@ class ArtistProfileController extends Controller
 
         $artist->home()->create([
             'roommates_count' => $validated['home_roommates_count'],
+            'description' => $validated['home_description'] ?? null,
             'distance_to_studio_minutes' => $validated['home_distance_to_studio_minutes'] ?? null,
-            'transport_type' => $validated['home_transport_type'],
-            'transport_cost' => $validated['home_transport_cost'] ?? null,
             'access_instructions' => $validated['home_access_instructions'] ?? null,
             'photo' => $homePhotoPath,
         ]);
@@ -182,6 +182,7 @@ class ArtistProfileController extends Controller
             'artist_photo' => 'nullable|image|max:5120',
 
             'studio_name' => 'required|string|max:255',
+            'studio_description' => 'nullable|string|max:1000',
             'studio_city' => 'required|string|max:255',
             'studio_address' => 'nullable|string|max:255',
             'studio_cost_type' => 'required|in:renta_fija,porcentaje,dueño_sin_costo',
@@ -193,9 +194,8 @@ class ArtistProfileController extends Controller
             'studio_photo' => 'nullable|image|max:5120',
 
             'home_roommates_count' => 'required|integer|min:0',
+            'home_description' => 'nullable|string|max:1000',
             'home_distance_to_studio_minutes' => 'nullable|integer|min:0',
-            'home_transport_type' => 'required|in:caminando,transporte_publico,auto',
-            'home_transport_cost' => 'nullable|numeric|min:0',
             'home_access_instructions' => 'nullable|string|max:500',
             'home_photo' => 'nullable|image|max:5120',
 
@@ -217,6 +217,7 @@ class ArtistProfileController extends Controller
 
         $studioData = [
             'name' => $validated['studio_name'],
+            'description' => $validated['studio_description'] ?? null,
             'city' => $validated['studio_city'],
             'address' => $validated['studio_address'] ?? null,
             'cost_type' => $validated['studio_cost_type'],
@@ -234,9 +235,8 @@ class ArtistProfileController extends Controller
 
         $homeData = [
             'roommates_count' => $validated['home_roommates_count'],
+            'description' => $validated['home_description'] ?? null,
             'distance_to_studio_minutes' => $validated['home_distance_to_studio_minutes'] ?? null,
-            'transport_type' => $validated['home_transport_type'],
-            'transport_cost' => $validated['home_transport_cost'] ?? null,
             'access_instructions' => $validated['home_access_instructions'] ?? null,
         ];
 

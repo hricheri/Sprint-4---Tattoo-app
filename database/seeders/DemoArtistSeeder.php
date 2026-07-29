@@ -29,6 +29,7 @@ class DemoArtistSeeder extends Seeder
 
             $testStudio = $testArtist->studio()->create([
                 'name' => 'Test Studio',
+                'description' => 'A cozy test studio used for local development.',
                 'city' => 'Barcelona',
                 'address' => 'Carrer de Prova 1',
                 'cost_type' => 'dueño_sin_costo',
@@ -43,8 +44,8 @@ class DemoArtistSeeder extends Seeder
 
             $testArtist->home()->create([
                 'roommates_count' => 0,
+                'description' => 'A quiet one-bedroom apartment, walking distance from the studio.',
                 'distance_to_studio_minutes' => 10,
-                'transport_type' => 'caminando',
                 'access_instructions' => 'Apartment 2B, buzzer code 1234.',
                 'photo' => 'https://picsum.photos/seed/testhome/600/300',
             ]);
@@ -70,6 +71,7 @@ class DemoArtistSeeder extends Seeder
 
             $studio = $artist->studio()->create([
                 'name' => "Estudio Demo $i",
+                'description' => 'A welcoming space for touring artists, fully equipped and ready to work.',
                 'city' => $cities[array_rand($cities)],
                 'address' => 'Calle Falsa 123',
                 'cost_type' => ['renta_fija', 'porcentaje', 'dueño_sin_costo'][array_rand([0, 1, 2])],
@@ -85,8 +87,8 @@ class DemoArtistSeeder extends Seeder
 
             $artist->home()->create([
                 'roommates_count' => rand(0, 2),
+                'description' => 'A comfortable home base, close to public transport and local spots.',
                 'distance_to_studio_minutes' => rand(5, 30),
-                'transport_type' => ['caminando', 'transporte_publico', 'auto'][array_rand([0, 1, 2])],
                 'access_instructions' => 'Departamento 3B, portero automático.',
                 'photo' => "https://picsum.photos/seed/home{$i}/600/300",
             ]);

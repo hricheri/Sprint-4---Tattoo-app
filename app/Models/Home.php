@@ -10,9 +10,8 @@ class Home extends Model
     protected $fillable = [
         'artist_id',
         'roommates_count',
+        'description',
         'distance_to_studio_minutes',
-        'transport_type',
-        'transport_cost',
         'access_instructions',
         'photo',
     ];

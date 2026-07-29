@@ -28,6 +28,15 @@
                         @error('bio') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
+                    <div>
+                        <label for="studio_city" class="block font-sans font-semibold text-sm text-gray-700 mb-1">City *</label>
+                        <input type="text" id="studio_city" name="studio_city" value="{{ old('studio_city') }}" required
+                            class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400"
+                            placeholder="Where are you based?">
+                        <p class="text-xs text-gray-400 mt-1">This is your studio's city — it'll be shown on your profile.</p>
+                        @error('studio_city') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
+
                     <div class="grid sm:grid-cols-2 gap-5">
                         <div>
                             <label for="social_media_handle" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Social media</label>
@@ -60,20 +69,19 @@
                         @error('studio_photo') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="grid sm:grid-cols-2 gap-5">
-                        <div>
-                            <label for="studio_name" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Studio name *</label>
-                            <input type="text" id="studio_name" name="studio_name" value="{{ old('studio_name') }}" required
-                                class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
-                            @error('studio_name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                        </div>
+                    <div>
+                        <label for="studio_name" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Studio name *</label>
+                        <input type="text" id="studio_name" name="studio_name" value="{{ old('studio_name') }}" required
+                            class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
+                        @error('studio_name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
 
-                        <div>
-                            <label for="studio_city" class="block font-sans font-semibold text-sm text-gray-700 mb-1">City *</label>
-                            <input type="text" id="studio_city" name="studio_city" value="{{ old('studio_city') }}" required
-                                class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
-                            @error('studio_city') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                        </div>
+                    <div>
+                        <label for="studio_description" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Studio description</label>
+                        <textarea id="studio_description" name="studio_description" rows="3"
+                            class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400"
+                            placeholder="Describe your studio's vibe, style, equipment...">{{ old('studio_description') }}</textarea>
+                        @error('studio_description') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
@@ -97,9 +105,13 @@
                         </div>
 
                         <div>
-                            <label for="studio_cost_amount" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Amount (if applicable)</label>
-                            <input type="number" step="0.01" id="studio_cost_amount" name="studio_cost_amount" value="{{ old('studio_cost_amount') }}"
-                                class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
+                            <label for="studio_cost_amount" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Cost per day (if applicable)</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-sans text-sm">$</span>
+                                <input type="number" step="0.01" id="studio_cost_amount" name="studio_cost_amount" value="{{ old('studio_cost_amount') }}"
+                                    class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400 pl-7">
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Daily rate, in your local currency.</p>
                             @error('studio_cost_amount') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
@@ -210,6 +222,14 @@
                         @error('home_photo') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
 
+                    <div>
+                        <label for="home_description" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Home description</label>
+                        <textarea id="home_description" name="home_description" rows="3"
+                            class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400"
+                            placeholder="Describe the space, neighborhood, what to expect...">{{ old('home_description') }}</textarea>
+                        @error('home_description') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
+
                     <div class="grid sm:grid-cols-2 gap-5">
                         <div>
                             <label for="home_roommates_count" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Roommates *</label>
@@ -224,27 +244,6 @@
                             <input type="number" min="0" id="home_distance_to_studio_minutes" name="home_distance_to_studio_minutes" value="{{ old('home_distance_to_studio_minutes') }}"
                                 class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
                             @error('home_distance_to_studio_minutes') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                        </div>
-                    </div>
-
-                    <div class="grid sm:grid-cols-2 gap-5">
-                        <div>
-                            <label for="home_transport_type" class="block font-sans font-semibold text-sm text-gray-700 mb-1">How to get there *</label>
-                            <select id="home_transport_type" name="home_transport_type" required
-                                class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
-                                <option value="">Choose an option</option>
-                                <option value="caminando" @selected(old('home_transport_type') == 'caminando')>Walking</option>
-                                <option value="transporte_publico" @selected(old('home_transport_type') == 'transporte_publico')>Public transport</option>
-                                <option value="auto" @selected(old('home_transport_type') == 'auto')>Car</option>
-                            </select>
-                            @error('home_transport_type') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label for="home_transport_cost" class="block font-sans font-semibold text-sm text-gray-700 mb-1">Transport cost</label>
-                            <input type="number" step="0.01" id="home_transport_cost" name="home_transport_cost" value="{{ old('home_transport_cost') }}"
-                                class="w-full rounded-xl border-gray-300 focus:border-lavender-400 focus:ring-lavender-400">
-                            @error('home_transport_cost') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>
 

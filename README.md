@@ -1,12 +1,10 @@
 # TattooArtist Swap 🎨✈️
 
-ArtistSwap es una aplicación para _tatuadores_ que viajan intercambiando estudio+hogar, con artistas de otras ciudades.
-
+ArtistSwap es una aplicación para tatuadores que viajan intercambiando estudio+hogar, con artistas de otras ciudades.
 
 ## 📱 Nota de diseño: pensada para app móvil
 
 La UI está diseñada para pantallas de móvil — layouts angostos centrados, dock de navegación flotante lateral, tarjetas en Explore, y flujos paso a paso pensados para navegar con el pulgar.
-
 
 ## Stack técnico
 
@@ -17,7 +15,6 @@ La UI está diseñada para pantallas de móvil — layouts angostos centrados, d
 - **Tipografía**: Nunito
 - **Paleta**: Lavanda + Verde lima
 
-
 ## Objetivos de la consigna cubiertos
 
 - ✅ Patrón MVC (Modelo-Vista-Controlador)
@@ -25,26 +22,28 @@ La UI está diseñada para pantallas de móvil — layouts angostos centrados, d
 - ✅ Eloquent ORM (relaciones, scopes, query builder, eager loading)
 - ✅ Autenticación de usuarios (Laravel Breeze)
 - ✅ Livewire
-- ✅ **Capa de servicio** (`app/Services/SwapService.php`) como ampliación de la arquitectura MVC — toda la lógica de negocio de un swap (crear, confirmar, cancelar, recalcular fechas) vive separada del modelo y del controlador
+- ✅ Capa de servicio (`app/Services/SwapService.php`) como ampliación de la arquitectura MVC — toda la lógica de negocio de un swap (crear, confirmar, cancelar, recalcular fechas) vive separada del modelo y del controlador
 - ✅ CRUD de perfil de artista (estudio + hogar + features)
-- ✅ Repositorio en GitHub con **gitflow**
-
+- ✅ Repositorio en GitHub con gitflow
 
 ## Modelo de datos (MER actual)
-
--->
+![Diagrama entidad-relación](screen_readme/MER.png)
 
 
 ## Funcionalidades principales
 
 ### Perfil de artista
-- Cada artista publica en su perfil, su estudio + su hogar (con fotos, características y descripciones). CRUD completo (crear, ver, editar, eliminar) del perfil
-- Selección de features de espacio de trabajo por categoría (must-have / additional). Acciones rápidas ("marcar todos los must-haves", "copiar de mi estudio")
-- Vista previa de mi perfil como lo ven otrxxs artistas en Explore.
 
-  ![Perfil de artista](screen_readme/profile.png)
+Cada artista publica en su perfil, su estudio + su hogar (con fotos, características y descripciones). CRUD completo (crear, ver, editar, eliminar) del perfil
+
+Selección de features de espacio de trabajo por categoría (must-have / additional). Acciones rápidas ("marcar todos los must-haves", "copiar de mi estudio")
+
+Vista previa de mi perfil como lo ven otrxxs artistas en Explore.
+
+![Perfil de artista](screen_readme/profile.png)
 
 ### Explorar y matchear
+
 - Exploración de artistas de a unx (estilo swipe), con comparación de features en común/faltantes
 - Like / Descartar
 - Detección de match mutuo con pop-up animado
@@ -52,8 +51,8 @@ La UI está diseñada para pantallas de móvil — layouts angostos centrados, d
 
 ![Favoritos](screen_readme/favorites.png)
 
-
 ### Coordinar el swap
+
 - Calendario de disponibilidad general (Livewire), con comparación visual contra la disponibilidad del otrx artista
 - Cálculo automático de fechas en común
 - Doble confirmación de fechas
@@ -61,16 +60,15 @@ La UI está diseñada para pantallas de móvil — layouts angostos centrados, d
 
 ![Calendario de disponibilidad](screen_readme/calendar.png)
 
-
 ### Post-confirmación
+
 - Intercambio de gráfica de "guest artist" antes de revelar datos sensibles
 - Recordatorio visual si faltan ≤7 días para el swap y la gráfica no fue enviada
 
 ![Anuncio](screen_readme/announcement.png)
 ![Anuncio enviado](screen_readme/announcement_sent.png)
 
-
-### Ciclo de vida de un `Swap`
+## Ciclo de vida de un Swap
 
 1. **Match mutuo** (like cruzado) → botón "Set Dates" crea un swap en `pendiente`, sin fechas.
 2. **Ambos marcan disponibilidad general** → el sistema calcula automáticamente la intersección de fechas (`SwapService::recalculateDates`).
@@ -85,18 +83,18 @@ La UI está diseñada para pantallas de móvil — layouts angostos centrados, d
 ![Swap cancelado](screen_readme/cancelled.png)
 ![Explorar y buscar reemplazo](screen_readme/replacement.png)
 
+## Notificaciones
 
-### Notificaciones
 - Badge lavanda: acciones pendientes (marcar disponibilidad, confirmar fechas, enviar gráfica)
 - Badge rojo: cancelación
 - Pop-ups: nuevo match, swap confirmado
 
 ![Swap confirmado](screen_readme/swap_confirmed.png)
 
-
 ## Instalación
 
 ### Requisitos
+
 - PHP 8.2+
 - Composer
 - Node.js + npm
@@ -125,6 +123,7 @@ php artisan migrate --seed
 ```
 
 Esto crea la base de datos y la puebla con:
+
 - Un usuario de prueba (`test@example.com`)
 - 6 artistas demo (`demo1@example.com` a `demo6@example.com`)
 - Disponibilidad aleatoria para cada uno (para poder probar el matching de fechas sin cargar datos manualmente)

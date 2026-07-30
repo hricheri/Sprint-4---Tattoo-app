@@ -1,58 +1,121 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# TattooArtist Swap 🎨✈️
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+ArtistSwap es una aplicación para tatuadores que viajan intercambiando estudio y hogar con otros artistas de distintas ciudades.
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📱 Nota de diseño: pensada para app móvil
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+La UI está diseñada mobile-first — layouts angostos centrados, dock de navegación flotante lateral, tarjetas tipo "swipe" en Explore, y flujos paso a paso pensados para pantallas chicas.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+## Stack técnico
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Backend**: Laravel 13
+- **Frontend**: Livewire 3 (Volt Class API) + Alpine.js + Tailwind CSS
+- **Base de datos**: MySQL
+- **Autenticación**: Laravel Breeze (con componentes Livewire)
+- **Tipografía**: Nunito
+- **Paleta**: Lavanda + Verde lima
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Objetivos de la consigna cubiertos
 
-## Agentic Development
+- ✅ Patrón MVC (Modelo-Vista-Controlador)
+- ✅ Modelos y migraciones completos (11 migraciones base + 8 migraciones incrementales)
+- ✅ Eloquent ORM (relaciones, scopes, query builder, eager loading)
+- ✅ Autenticación de usuarios (Laravel Breeze)
+- ✅ Autorización con **Policies** (`SwapPolicy`) — reemplaza checks manuales de permisos
+- ✅ Livewire (Volt Class API) — componentes reactivos para navegación, calendario de disponibilidad, notificaciones de match y confirmación
+- ✅ **Capa de servicio** (`app/Services/SwapService.php`) como ampliación de la arquitectura MVC — toda la lógica de negocio de un swap (crear, confirmar, cancelar, recalcular fechas) vive separada del modelo y del controlador
+- ✅ CRUD de perfil de artista (estudio + hogar + features)
+- ✅ Repositorio en GitHub con **gitflow**
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+
+## Modelo de datos (MER actual)
+
+-->
+
+
+## Funcionalidades principales
+
+### Perfil de artista
+- Cada artista publica en su perfil, su estudio y su hogar, con sus fotos y características. CRUD completo (crear, ver, editar, eliminar) de perfil + estudio + hogar
+- Selección de features por categoría (must-have / additional), con acciones rápidas ("marcar todos los must-haves", "copiar de mi estudio")
+- Vista previa de cómo lo ven otros artistas
+
+### Explorar y matchear
+- Exploración de artistas de a uno (estilo swipe), con comparación de features en común/faltantes
+- Like / Descartar
+- Detección de match mutuo con pop-up animado
+- Favoritos con distinción visual: Liked / Match / Swap en progreso / Swap confirmado
+
+### Coordinar el swap
+- Calendario de disponibilidad general (Livewire), con comparación visual contra la disponibilidad del otro artista
+- Cálculo automático de fechas en común
+- Doble confirmación de fechas
+- Calendario de viajes confirmados, con bloqueo automático de días
+
+### Post-confirmación
+- Intercambio de gráfica de "guest artist" antes de revelar datos sensibles
+- Recordatorio visual si faltan ≤7 días para el swap y la gráfica no fue enviada
+
+
+
+### Ciclo de vida de un `Swap`
+
+1. **Match mutuo** (like cruzado) → botón "Set Dates" crea un swap en `pendiente`, sin fechas.
+2. **Ambos marcan disponibilidad general** → el sistema calcula automáticamente la intersección de fechas (`SwapService::recalculateDates`).
+3. **Doble confirmación** → cada artista debe confirmar el rango calculado. Si alguno agrega/quita disponibilidad, el rango se recalcula y ambas confirmaciones se resetean.
+4. **`aceptado`** → cuando ambos confirmaron. Se dispara un pop-up de celebración para ambos, y las fechas quedan bloqueadas en el calendario de cada uno.
+5. **Guest announcement** → antes de revelar dirección/instrucciones de acceso, cada artista confirma que envió al otro una gráfica para redes sociales.
+6. **Cancelación** (opcional, en cualquier momento tras confirmar) → un artista puede cancelar un swap `aceptado`, con mensaje opcional. El otro recibe un aviso con badge rojo, y puede elegir "buscar otro swap para esas fechas" (lo que prioriza en Explore a artistas con disponibilidad que coincida) o descartar el aviso.
+
+
+
+### Notificaciones
+- Badge lavanda: acciones pendientes (marcar disponibilidad, confirmar fechas, enviar gráfica)
+- Badge rojo: cancelaciones sin resolver
+- Pop-ups: nuevo match, swap confirmado
+
+
+## Instalación
+
+### Requisitos
+- PHP 8.2+
+- Composer
+- Node.js + npm
+- MySQL
+
+### Pasos
 
 ```bash
-composer require laravel/boost --dev
+git clone https://github.com/hricheri/Sprint-4---Tattoo-app.git
+cd Sprint-4---Tattoo-app
 
-php artisan boost:install
+composer install
+composer require doctrine/dbal   # necesario para migraciones que modifican columnas existentes
+
+npm install
+npm run build                    # o `npm run dev` mientras desarrollás
+
+cp .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Configurá tu conexión a MySQL en `.env`, y luego:
 
-## Contributing
+```bash
+php artisan migrate --seed
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Esto crea la base de datos y la puebla con:
+- Un usuario de prueba (`test@example.com`)
+- 6 artistas demo (`demo1@example.com` a `demo6@example.com`)
+- Disponibilidad aleatoria para cada uno (para poder probar el matching de fechas sin cargar datos manualmente)
+- Algunos likes iniciales entre el usuario de prueba y los demos
 
-## Code of Conduct
+```bash
+php artisan serve
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+La app queda disponible en `http://127.0.0.1:8000`.

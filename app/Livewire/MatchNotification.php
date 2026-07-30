@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Artist;
 use App\Models\Like;
-use App\Models\Swap;
+use App\Services\SwapService;
 use Livewire\Component;
 
 class MatchNotification extends Component
@@ -45,14 +45,14 @@ class MatchNotification extends Component
         return redirect()->route('artists.show', $artistId);
     }
 
-    public function proposeSwap(int $likeId, int $artistId)
+    public function proposeSwap(int $likeId, int $artistId, SwapService $swaps)
     {
         Like::whereKey($likeId)->update(['match_seen_at' => now()]);
 
         $myArtist = auth()->user()->artist;
         $otherArtist = Artist::findOrFail($artistId);
 
-        $swap = Swap::startBetween($myArtist, $otherArtist);
+        $swap = $swaps->start($myArtist, $otherArtist);
 
         return redirect()->route('availability', ['swap_id' => $swap->id]);
     }
@@ -74,6 +74,13 @@ class MatchNotification extends Component
         );
 
         $this->newMatches = [];
+    }
+
+    public function goToSwaps()
+    {
+        $this->dismissAll();
+
+        return redirect()->route('swaps.index');
     }
 
     public function render()

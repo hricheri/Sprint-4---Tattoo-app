@@ -21,6 +21,23 @@
                 <p class="font-sans text-sm text-gray-400 mt-1">Check back later, or take a look at your favorites.</p>
             </div>
         @else
+            @if ($matchedByCancelledDates ?? false)
+                <a href="{{ route('artists.availability', $artist) }}" class="block bg-lavender-100 border border-lavender-300 rounded-2xl px-5 py-3 mb-4 hover:bg-lavender-200 transition">
+                    <p class="font-sans font-semibold text-sm text-lavender-700 mb-1">
+                        ✨ Suggested because their availability matches your open dates.
+                    </p>
+                    @if (!empty($suggestedOverlapRanges))
+                        <p class="font-sans text-xs text-lavender-600">
+                            Available:
+                            @foreach ($suggestedOverlapRanges as $i => $range)
+                                {{ \Carbon\Carbon::parse($range['start'])->format('M j') }}@if($range['start'] !== $range['end']) – {{ \Carbon\Carbon::parse($range['end'])->format('M j') }}@endif{{ $i < count($suggestedOverlapRanges) - 1 ? ', ' : '' }}
+                            @endforeach
+                            · view full calendar →
+                        </p>
+                    @endif
+                </a>
+            @endif
+
             <div class="bg-white rounded-3xl shadow-lg overflow-hidden border border-gray-100">
 
                 <div class="relative h-44 bg-gray-100">
@@ -100,7 +117,7 @@
                     <input type="hidden" name="liked_artist_id" value="{{ $artist->id }}">
                     <button type="submit"
                         class="w-full font-sans font-extrabold text-gray-900 bg-lima-300 hover:bg-lima-400 rounded-2xl py-4 transition">
-                        🤍 Like
+                        💖 Like
                     </button>
                 </form>
             </div>

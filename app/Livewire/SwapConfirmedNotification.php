@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Swap;
+use App\Services\SwapService;
 use Livewire\Component;
 
 class SwapConfirmedNotification extends Component
@@ -45,13 +46,13 @@ class SwapConfirmedNotification extends Component
         })->values()->toArray();
     }
 
-    public function dismiss(int $swapId): void
+    public function dismiss(int $swapId, SwapService $swaps): void
     {
         $artist = auth()->user()->artist;
         $swap = Swap::find($swapId);
 
         if ($swap) {
-            $swap->markConfirmedSeenFor($artist->id);
+            $swaps->markConfirmedSeen($swap, $artist->id);
         }
 
         $this->confirmedSwaps = collect($this->confirmedSwaps)
@@ -60,21 +61,23 @@ class SwapConfirmedNotification extends Component
             ->toArray();
     }
 
-    public function dismissAll(): void
+    public function dismissAll(SwapService $swaps): void
     {
         $artist = auth()->user()->artist;
 
-        collect($this->confirmedSwaps)->pluck('swap_id')->each(function ($id) use ($artist) {
+        collect($this->confirmedSwaps)->pluck('swap_id')->each(function ($id) use ($swaps, $artist) {
             $swap = Swap::find($id);
-            $swap?->markConfirmedSeenFor($artist->id);
+            if ($swap) {
+                $swaps->markConfirmedSeen($swap, $artist->id);
+            }
         });
 
         $this->confirmedSwaps = [];
     }
 
-    public function goToSwaps()
+    public function goToSwaps(SwapService $swaps)
     {
-        $this->dismissAll();
+        $this->dismissAll($swaps);
 
         return redirect()->route('swaps.index');
     }

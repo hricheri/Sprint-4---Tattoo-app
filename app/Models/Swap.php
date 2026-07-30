@@ -21,6 +21,9 @@ class Swap extends Model
         'promo_sent_by_a',
         'promo_sent_by_b',
         'includes_money_exchange',
+        'cancellation_message',
+        'cancelled_by_artist_id',
+        'cancellation_resolved',
     ];
 
     protected $casts = [
@@ -33,6 +36,7 @@ class Swap extends Model
         'confirmed_seen_by_b' => 'boolean',
         'promo_sent_by_a' => 'boolean',
         'promo_sent_by_b' => 'boolean',
+        'cancellation_resolved' => 'boolean',
     ];
 
     public function artistA(): BelongsTo
@@ -43,6 +47,11 @@ class Swap extends Model
     public function artistB(): BelongsTo
     {
         return $this->belongsTo(Artist::class, 'artist_b_id');
+    }
+
+    public function cancelledBy(): BelongsTo
+    {
+        return $this->belongsTo(Artist::class, 'cancelled_by_artist_id');
     }
 
     public static function isConfirmedBetween(int $artistIdA, int $artistIdB): bool
@@ -61,82 +70,6 @@ class Swap extends Model
                 });
             })
             ->first();
-    }
-
-    public static function startBetween(Artist $initiator, Artist $other): self
-    {
-        $existing = static::where('status', 'pendiente')
-            ->where(function ($q) use ($initiator, $other) {
-                $q->where(function ($q2) use ($initiator, $other) {
-                    $q2->where('artist_a_id', $initiator->id)->where('artist_b_id', $other->id);
-                })->orWhere(function ($q2) use ($initiator, $other) {
-                    $q2->where('artist_a_id', $other->id)->where('artist_b_id', $initiator->id);
-                });
-            })
-            ->first();
-
-        $swap = $existing ?? static::create([
-            'artist_a_id' => $initiator->id,
-            'artist_b_id' => $other->id,
-            'status' => 'pendiente',
-            'includes_money_exchange' => false,
-        ]);
-
-        $swap->recalculateDates();
-
-        return $swap;
-    }
-
-    public function recalculateDates(): void
-    {
-        $datesA = Availability::where('artist_id', $this->artist_a_id)
-            ->pluck('date')->map(fn ($d) => $d->format('Y-m-d'))->toArray();
-
-        $datesB = Availability::where('artist_id', $this->artist_b_id)
-            ->pluck('date')->map(fn ($d) => $d->format('Y-m-d'))->toArray();
-
-        $overlap = array_values(array_intersect($datesA, $datesB));
-        sort($overlap);
-
-        $newStart = $overlap[0] ?? null;
-        $newEnd = $overlap[count($overlap) - 1] ?? null;
-
-        $currentStart = $this->start_date?->format('Y-m-d');
-        $currentEnd = $this->end_date?->format('Y-m-d');
-
-        if ($currentStart !== $newStart || $currentEnd !== $newEnd) {
-            $this->update([
-                'start_date' => $newStart,
-                'end_date' => $newEnd,
-                'confirmed_by_a' => false,
-                'confirmed_by_b' => false,
-            ]);
-        }
-    }
-
-    public static function recalculateAllFor(int $artistId): void
-    {
-        static::where('status', 'pendiente')
-            ->where(function ($q) use ($artistId) {
-                $q->where('artist_a_id', $artistId)->orWhere('artist_b_id', $artistId);
-            })
-            ->get()
-            ->each(fn (Swap $swap) => $swap->recalculateDates());
-    }
-
-    public function confirmFor(int $artistId): void
-    {
-        if ($this->artist_a_id === $artistId) {
-            $this->confirmed_by_a = true;
-        } elseif ($this->artist_b_id === $artistId) {
-            $this->confirmed_by_b = true;
-        }
-
-        if ($this->confirmed_by_a && $this->confirmed_by_b) {
-            $this->status = 'aceptado';
-        }
-
-        $this->save();
     }
 
     public function isAwaitingAvailability(): bool
@@ -173,33 +106,11 @@ class Swap extends Model
         return false;
     }
 
-    public function markConfirmedSeenFor(int $artistId): void
-    {
-        if ($this->artist_a_id === $artistId) {
-            $this->confirmed_seen_by_a = true;
-        } elseif ($this->artist_b_id === $artistId) {
-            $this->confirmed_seen_by_b = true;
-        }
-
-        $this->save();
-    }
-
     public function promoSentFor(int $artistId): bool
     {
         if ($this->artist_a_id === $artistId) return (bool) $this->promo_sent_by_a;
         if ($this->artist_b_id === $artistId) return (bool) $this->promo_sent_by_b;
         return false;
-    }
-
-    public function markPromoSentFor(int $artistId): void
-    {
-        if ($this->artist_a_id === $artistId) {
-            $this->promo_sent_by_a = true;
-        } elseif ($this->artist_b_id === $artistId) {
-            $this->promo_sent_by_b = true;
-        }
-
-        $this->save();
     }
 
     public function bothPromosSent(): bool
@@ -210,5 +121,18 @@ class Swap extends Model
     public function isPromoReminderUrgent(): bool
     {
         return $this->start_date && now()->diffInDays($this->start_date, false) <= 7 && now()->lte($this->start_date);
+    }
+
+    public function isActiveFor(int $artistId): bool
+    {
+        return in_array($this->status, ['pendiente', 'aceptado'])
+            && ($this->artist_a_id === $artistId || $this->artist_b_id === $artistId);
+    }
+
+    public function wasCancelledByOther(int $myArtistId): bool
+    {
+        return $this->status === 'cancelado'
+            && $this->cancelled_by_artist_id !== null
+            && $this->cancelled_by_artist_id !== $myArtistId;
     }
 }

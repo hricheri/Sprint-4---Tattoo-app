@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Artist;
+use App\Models\Availability;
 use App\Models\Feature;
 use App\Models\Like;
 use App\Models\User;
@@ -52,6 +53,8 @@ class DemoArtistSeeder extends Seeder
             $testArtist->featurePreferences()->sync(
                 collect($mustHaveIds)->random(min(5, count($mustHaveIds)))->toArray()
             );
+
+            $this->seedRandomAvailability($testArtist);
         }
 
         for ($i = 1; $i <= 6; $i++) {
@@ -90,6 +93,8 @@ class DemoArtistSeeder extends Seeder
                 'access_instructions' => 'Departamento 3B, portero automático.',
                 'photo' => "https://picsum.photos/seed/home{$i}/600/300",
             ]);
+
+            $this->seedRandomAvailability($artist);
         }
 
         $testArtist = $testUser?->fresh()->artist;
@@ -107,6 +112,25 @@ class DemoArtistSeeder extends Seeder
                     ]);
                 }
             }
+        }
+    }
+
+    /**
+     * Marca entre 8 y 15 días de disponibilidad aleatoria para un artista,
+     * distribuidos en los próximos 60 días, para que haya datos con los que
+     * probar el matching de fechas (calendario, sugerencias tras cancelación, etc.).
+     */
+    private function seedRandomAvailability(Artist $artist): void
+    {
+        $daysAhead = range(1, 60);
+        shuffle($daysAhead);
+        $chosenDays = array_slice($daysAhead, 0, rand(8, 15));
+
+        foreach ($chosenDays as $dayOffset) {
+            Availability::create([
+                'artist_id' => $artist->id,
+                'date' => now()->addDays($dayOffset)->format('Y-m-d'),
+            ]);
         }
     }
 }

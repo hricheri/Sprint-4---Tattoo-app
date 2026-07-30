@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Artist;
+use App\Models\Availability;
 use App\Models\Feature;
+use App\Models\Like;
 use App\Models\Swap;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -48,6 +51,44 @@ class ArtistProfileController extends Controller
         $canSeeSensitiveInfo = $confirmedSwap && $confirmedSwap->bothPromosSent();
 
         return view('artist-profile.public-show', compact('artist', 'offersAllMustHaves', 'canSeeSensitiveInfo'));
+    }
+
+    /**
+     * Vista pública de solo lectura del calendario de disponibilidad general
+     * de un artista (sin comparación, sin edición) — para que otros artistas
+     * puedan revisar en detalle antes de darle like o proponer un swap.
+     * Incluye acciones directas de Like/Discard para no depender de volver
+     * atrás en el navegador.
+     */
+    public function availability(Request $request, Artist $artist)
+    {
+        $monthParam = $request->query('month');
+        $month = $monthParam ? Carbon::parse($monthParam)->startOfMonth() : now()->startOfMonth();
+
+        $availableDates = Availability::where('artist_id', $artist->id)
+            ->pluck('date')
+            ->map(fn ($d) => $d->format('Y-m-d'))
+            ->toArray();
+
+        $startOfCalendar = $month->copy()->startOfWeek(Carbon::MONDAY);
+        $endOfCalendar = $month->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY);
+
+        $days = [];
+        $d = $startOfCalendar->copy();
+        while ($d->lte($endOfCalendar)) {
+            $days[] = $d->copy();
+            $d->addDay();
+        }
+
+        $prevMonth = $month->copy()->subMonth()->format('Y-m-01');
+        $nextMonth = $month->copy()->addMonth()->format('Y-m-01');
+
+        $myArtist = Auth::user()->artist;
+        $alreadyLiked = $myArtist
+            ? Like::where('liker_artist_id', $myArtist->id)->where('liked_artist_id', $artist->id)->exists()
+            : false;
+
+        return view('artist-profile.availability-view', compact('artist', 'availableDates', 'days', 'month', 'prevMonth', 'nextMonth', 'alreadyLiked'));
     }
 
     private function offersAllMustHaves(Artist $artist): bool

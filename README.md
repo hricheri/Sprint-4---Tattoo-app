@@ -66,6 +66,7 @@ La UI está diseñada para pantallas de móvil — layouts angostos centrados, d
 - Intercambio de gráfica de "guest artist" antes de revelar datos sensibles
 - Recordatorio visual si faltan ≤7 días para el swap y la gráfica no fue enviada
 
+![Anuncio](screen_readme/announcement.png)
 ![Anuncio enviado](screen_readme/announcement_sent.png)
 
 

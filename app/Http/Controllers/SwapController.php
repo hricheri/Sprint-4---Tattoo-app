@@ -6,10 +6,16 @@ use App\Models\Artist;
 use App\Models\Availability;
 use App\Models\Like;
 use App\Models\Swap;
+use App\Services\SwapService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SwapController extends Controller
 {
+    public function __construct(private SwapService $swaps)
+    {
+    }
+
     public function index()
     {
         $myArtist = Auth::user()->artist;
@@ -20,7 +26,7 @@ class SwapController extends Controller
 
         $swaps = Swap::where('artist_a_id', $myArtist->id)
             ->orWhere('artist_b_id', $myArtist->id)
-            ->with(['artistA.user', 'artistA.studio', 'artistA.home', 'artistB.user', 'artistB.studio', 'artistB.home'])
+            ->with(['artistA.user', 'artistA.studio', 'artistA.home', 'artistB.user', 'artistB.studio', 'artistB.home', 'cancelledBy.user'])
             ->orderByDesc('created_at')
             ->get();
 
@@ -29,6 +35,10 @@ class SwapController extends Controller
         $awaitingAvailability = $active->filter(fn (Swap $s) => $s->isAwaitingAvailability());
         $awaitingConfirmation = $active->filter(fn (Swap $s) => $s->isAwaitingConfirmation());
         $confirmed = $swaps->where('status', 'aceptado');
+
+        $recentlyCancelled = $swaps
+            ->where('status', 'cancelado')
+            ->filter(fn (Swap $s) => $s->wasCancelledByOther($myArtist->id) && !session()->has("cancelled_swap_dismissed_{$s->id}"));
 
         $newMatchIds = Like::pendingMatchArtistIdsFor($myArtist->id);
         $newMatches = Artist::whereIn('id', $newMatchIds)->with('user')->get();
@@ -39,6 +49,7 @@ class SwapController extends Controller
             'awaitingAvailability',
             'awaitingConfirmation',
             'confirmed',
+            'recentlyCancelled',
             'newMatches',
             'myArtist',
             'hasSetAvailability'
@@ -49,19 +60,23 @@ class SwapController extends Controller
     {
         $myArtist = Auth::user()->artist;
 
-        $swap = Swap::startBetween($myArtist, $artist);
+        $swap = $this->swaps->start($myArtist, $artist);
+
+        Like::where('liker_artist_id', $myArtist->id)
+            ->where('liked_artist_id', $artist->id)
+            ->update(['match_seen_at' => now()]);
 
         return redirect()->route('availability', ['swap_id' => $swap->id]);
     }
 
     public function confirmDates(Swap $swap)
     {
-        $this->authorizeParticipant($swap);
+        $this->authorize('confirmDates', $swap);
 
         $myArtist = Auth::user()->artist;
-        $swap->confirmFor($myArtist->id);
+        $this->swaps->confirm($swap, $myArtist->id);
 
-        $message = $swap->status === 'aceptado'
+        $message = $swap->fresh()->status === 'aceptado'
             ? 'Swap confirmed! Check your travel calendar below.'
             : 'Dates confirmed on your side — waiting for the other artist to confirm.';
 
@@ -70,30 +85,64 @@ class SwapController extends Controller
 
     public function reject(Swap $swap)
     {
-        $this->authorizeParticipant($swap);
+        $this->authorize('reject', $swap);
 
-        $swap->update(['status' => 'rechazado']);
+        $this->swaps->reject($swap);
 
         return redirect()->route('swaps.index')->with('status', 'Swap declined.');
     }
 
-    public function markPromoSent(Swap $swap)
+    public function cancel(Request $request, Swap $swap)
     {
-        $this->authorizeParticipant($swap);
+        $this->authorize('cancel', $swap);
+
+        $validated = $request->validate([
+            'cancellation_message' => 'nullable|string|max:500',
+        ]);
 
         $myArtist = Auth::user()->artist;
-        $swap->markPromoSentFor($myArtist->id);
+        $this->swaps->cancel($swap, $myArtist->id, $validated['cancellation_message'] ?? null);
 
-        return redirect()->route('swaps.index')->with('status', "Announcement underway! Now let the clients roll in!");
+        return redirect()->route('swaps.index')->with('status', 'Swap cancelled.');
     }
 
-    private function authorizeParticipant(Swap $swap): void
+    public function dismissCancellation(Request $request, Swap $swap)
+    {
+        $this->swaps->resolveCancellation($swap);
+
+        session(["cancelled_swap_dismissed_{$swap->id}" => true]);
+
+        return redirect()->route('swaps.index');
+    }
+
+    public function searchAfterCancellation(Request $request, Swap $swap)
     {
         $myArtist = Auth::user()->artist;
 
-        abort_unless(
-            $swap->artist_a_id === $myArtist->id || $swap->artist_b_id === $myArtist->id,
-            403
-        );
+        abort_unless($swap->artist_a_id === $myArtist->id || $swap->artist_b_id === $myArtist->id, 403);
+
+        if ($swap->start_date && $swap->end_date) {
+            session([
+                'availability_search_dates' => [
+                    'start' => $swap->start_date->format('Y-m-d'),
+                    'end' => $swap->end_date->format('Y-m-d'),
+                ],
+            ]);
+        }
+
+        $this->swaps->resolveCancellation($swap);
+        session(["cancelled_swap_dismissed_{$swap->id}" => true]);
+
+        return redirect()->route('explore');
+    }
+
+    public function markPromoSent(Swap $swap)
+    {
+        $this->authorize('markPromoSent', $swap);
+
+        $myArtist = Auth::user()->artist;
+        $this->swaps->markPromoSent($swap, $myArtist->id);
+
+        return redirect()->route('swaps.index')->with('status', "Announcement underway! Now let the clients roll in!");
     }
 }

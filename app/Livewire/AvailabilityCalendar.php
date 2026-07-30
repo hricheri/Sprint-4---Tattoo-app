@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Artist;
 use App\Models\Availability;
 use App\Models\Swap;
+use App\Services\SwapService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -55,10 +56,15 @@ class AvailabilityCalendar extends Component
 
         $this->swapId = $swap->id;
         $this->swap = $swap;
-        $this->compareArtistId = $swap->otherArtistId($artist->id);
 
-        $compareArtist = Artist::with('user')->find($this->compareArtistId);
-        $this->compareArtistName = $compareArtist?->user->name;
+        // Una vez confirmado, ya no tiene sentido comparar "mío vs suyo":
+        // solo mostramos el bloque final de "confirmed swap".
+        if ($swap->status !== 'aceptado') {
+            $this->compareArtistId = $swap->otherArtistId($artist->id);
+
+            $compareArtist = Artist::with('user')->find($this->compareArtistId);
+            $this->compareArtistName = $compareArtist?->user->name;
+        }
     }
 
     public function loadDates()
@@ -108,7 +114,7 @@ class AvailabilityCalendar extends Component
         $this->confirmedSwapByDate = $byDate;
     }
 
-    public function toggleDate($date)
+    public function toggleDate($date, SwapService $swaps)
     {
         if (in_array($date, $this->confirmedDates)) {
             return;
@@ -129,7 +135,7 @@ class AvailabilityCalendar extends Component
             ]);
         }
 
-        Swap::recalculateAllFor($artist->id);
+        $swaps->recalculateAllFor($artist->id);
 
         if ($this->swapId) {
             $this->swap = Swap::find($this->swapId);
@@ -138,28 +144,28 @@ class AvailabilityCalendar extends Component
         $this->loadDates();
     }
 
-    public function confirmSwapDates()
+    public function confirmSwapDates(SwapService $swaps)
     {
         $myArtist = Auth::user()->artist;
         $swap = Swap::find($this->swapId);
 
         abort_unless($swap && ($swap->artist_a_id === $myArtist->id || $swap->artist_b_id === $myArtist->id), 403);
 
-        $swap->confirmFor($myArtist->id);
+        $swaps->confirm($swap, $myArtist->id);
 
         return redirect()->route('swaps.index')->with('status',
-            $swap->status === 'aceptado'
+            $swap->fresh()->status === 'aceptado'
                 ? 'Swap confirmed! Check your travel calendar below.'
                 : 'Dates confirmed on your side — waiting for the other artist to confirm.'
         );
     }
 
-    public function declineSwap()
+    public function declineSwap(SwapService $swaps)
     {
         $swap = Swap::find($this->swapId);
 
         if ($swap) {
-            $swap->update(['status' => 'rechazado']);
+            $swaps->reject($swap);
         }
 
         return redirect()->route('swaps.index')->with('status', 'Swap declined.');

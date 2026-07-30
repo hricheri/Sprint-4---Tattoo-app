@@ -12,6 +12,57 @@
             </div>
         @endif
 
+        {{-- === RECENTLY CANCELLED (by the other artist) === --}}
+        @if ($recentlyCancelled->isNotEmpty())
+            <div>
+                <h2 class="font-sans font-extrabold text-xl text-red-600 mb-4">⚠️ Swap cancelled</h2>
+                <div class="space-y-3">
+                    @foreach ($recentlyCancelled as $swap)
+                        @php $other = $swap->artist_a_id === $myArtist->id ? $swap->artistB : $swap->artistA; @endphp
+                        <div class="bg-white rounded-2xl shadow-sm border border-red-200 p-5">
+                            <div class="flex items-center gap-3 mb-3">
+                                @if ($other->profile_photo)
+                                    <img src="{{ photo_url($other->profile_photo) }}" class="w-12 h-12 rounded-full object-cover">
+                                @endif
+                                <div>
+                                    <p class="font-sans font-bold text-gray-900">{{ $other->user->name }} cancelled your swap</p>
+                                    @if ($swap->start_date && $swap->end_date)
+                                        <p class="font-sans text-sm text-gray-500">{{ $swap->start_date->format('M j') }} – {{ $swap->end_date->format('M j, Y') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+
+                            @if ($swap->cancellation_message)
+                                <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                                    <p class="font-sans font-bold text-xs uppercase tracking-wide text-gray-500 mb-1">Their message</p>
+                                    <p class="font-sans text-sm text-gray-700">{{ $swap->cancellation_message }}</p>
+                                </div>
+                            @endif
+
+                            <p class="font-sans text-sm text-gray-600 mb-4">
+                                Want to look for another swap for these dates{{ $swap->start_date ? ' (' . $swap->start_date->format('M j') . ' – ' . $swap->end_date->format('M j') . ')' : '' }}?
+                            </p>
+
+                            <div class="flex gap-2">
+                                <form method="POST" action="{{ route('swaps.search-after-cancellation', $swap) }}">
+                                    @csrf
+                                    <button class="font-sans font-extrabold text-sm bg-lavender-500 hover:bg-lavender-600 text-white rounded-full px-5 py-2 transition">
+                                        Yes, find another swap
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('swaps.dismiss-cancellation', $swap) }}">
+                                    @csrf
+                                    <button class="font-sans font-semibold text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-5 py-2 transition">
+                                        No, thanks
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         {{-- === NEW MATCHES === --}}
         @if ($newMatches->isNotEmpty())
             <div>
@@ -247,6 +298,39 @@
                                         </div>
                                     </div>
                                 @endif
+
+                                <div class="pt-2 border-t border-lavender-100" x-data="{ cancelling: false }">
+                                    <button
+                                        x-show="!cancelling"
+                                        @click="cancelling = true"
+                                        type="button"
+                                        class="font-sans text-xs text-red-500 hover:text-red-700 hover:underline mt-3">
+                                        Cancel this swap
+                                    </button>
+
+                                    <form x-show="cancelling" x-cloak method="POST" action="{{ route('swaps.cancel', $swap) }}" class="mt-3 bg-red-50 border border-red-200 rounded-xl p-4 max-w-sm">
+                                        @csrf
+                                        <p class="font-sans font-bold text-sm text-red-700 mb-1">⚠️ Cancelling this swap affects your reputation</p>
+                                        <p class="font-sans text-xs text-gray-600 mb-3">
+                                            Cancelled confirmed swaps will be visible on your profile in the future, alongside completed
+                                            swaps and reviews. Only cancel if you truly can't make it.
+                                        </p>
+                                        <label for="cancellation_message_{{ $swap->id }}" class="block font-sans font-semibold text-xs text-gray-700 mb-1">
+                                            Message to {{ $otherArtist->user->name }} (optional)
+                                        </label>
+                                        <textarea id="cancellation_message_{{ $swap->id }}" name="cancellation_message" rows="2"
+                                            class="w-full rounded-lg border-gray-300 text-sm focus:border-red-400 focus:ring-red-400 mb-3"
+                                            placeholder="Let them know what happened..."></textarea>
+                                        <div class="flex gap-2">
+                                            <button type="submit" class="font-sans font-extrabold text-sm bg-gray-900 hover:bg-gray-800 text-white rounded-full px-4 py-2 transition">
+                                                Yes, cancel swap
+                                            </button>
+                                            <button @click="cancelling = false" type="button" class="font-sans font-semibold text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-4 py-2 transition">
+                                                Never mind
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     @endforeach

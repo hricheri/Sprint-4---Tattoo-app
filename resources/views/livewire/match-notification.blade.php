@@ -63,7 +63,7 @@
                     @endforeach
                 </div>
 
-                <a href="{{ route('swaps.index') }}" wire:click="dismissAll" class="mt-6 block w-full font-sans font-semibold text-sm text-gray-500 hover:text-gray-700 text-center">View all matches in Swaps</a>
+                <button type="button" wire:click="goToSwaps" class="mt-6 block w-full font-sans font-semibold text-sm text-gray-500 hover:text-gray-700 text-center">View all matches in Swaps</button>
             </div>
         </div>
     @endif

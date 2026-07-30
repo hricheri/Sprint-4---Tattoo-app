@@ -10,6 +10,8 @@ new class extends Component
 {
     public $swapsAlertCount = 0;
 
+    public $cancelledAlertCount = 0;
+
     public function mount()
     {
         $artist = auth()->user()->artist ?? null;
@@ -19,10 +21,10 @@ new class extends Component
 
             $hasAnyAvailability = Availability::where('artist_id', $artist->id)->exists();
 
-            $activeSwaps = Swap::where('status', 'pendiente')
-                ->where(function ($q) use ($artist) {
+            $activeSwaps = Swap::where(function ($q) use ($artist) {
                     $q->where('artist_a_id', $artist->id)->orWhere('artist_b_id', $artist->id);
                 })
+                ->whereIn('status', ['pendiente', 'aceptado'])
                 ->get();
 
             $awaitingAvailabilityCount = $hasAnyAvailability
@@ -33,7 +35,19 @@ new class extends Component
                 ->filter(fn (Swap $s) => $s->isAwaitingConfirmation() && ! $s->myConfirmed($artist->id))
                 ->count();
 
-            $this->swapsAlertCount = $newMatchesCount + $awaitingAvailabilityCount + $awaitingConfirmationCount;
+            $promoPendingCount = $activeSwaps
+                ->filter(fn (Swap $s) => $s->status === 'aceptado' && ! $s->promoSentFor($artist->id))
+                ->count();
+
+            $this->swapsAlertCount = $newMatchesCount + $awaitingAvailabilityCount + $awaitingConfirmationCount + $promoPendingCount;
+
+            $this->cancelledAlertCount = Swap::where(function ($q) use ($artist) {
+                    $q->where('artist_a_id', $artist->id)->orWhere('artist_b_id', $artist->id);
+                })
+                ->where('status', 'cancelado')
+                ->get()
+                ->filter(fn (Swap $s) => $s->wasCancelledByOther($artist->id) && ! session()->has("cancelled_swap_dismissed_{$s->id}"))
+                ->count();
         }
     }
 
@@ -84,7 +98,9 @@ new class extends Component
                     {{ __('My Availability') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('swaps.index')" :active="request()->routeIs('swaps.*')" wire:navigate>
-                    {{ __('My Swaps') }} @if ($swapsAlertCount > 0) ({{ $swapsAlertCount }}) @endif
+                    {{ __('My Swaps') }}
+                    @if ($swapsAlertCount > 0) ({{ $swapsAlertCount }}) @endif
+                    @if ($cancelledAlertCount > 0) <span class="text-red-500 font-bold">· {{ $cancelledAlertCount }} cancelled</span> @endif
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('favorites')" :active="request()->routeIs('favorites')" wire:navigate>
                     {{ __('Favorites') }}
@@ -149,6 +165,11 @@ new class extends Component
             @if ($swapsAlertCount > 0)
                 <span class="absolute top-0.5 right-0.5 bg-lavender-500 text-white text-[10px] font-sans font-bold rounded-full w-4 h-4 flex items-center justify-center">
                     {{ $swapsAlertCount }}
+                </span>
+            @endif
+            @if ($cancelledAlertCount > 0)
+                <span class="absolute bottom-0.5 right-0.5 bg-red-500 text-white text-[10px] font-sans font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {{ $cancelledAlertCount }}
                 </span>
             @endif
         </a>

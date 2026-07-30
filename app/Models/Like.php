@@ -28,10 +28,6 @@ class Like extends Model
         return $this->belongsTo(Artist::class, 'liked_artist_id');
     }
 
-    /**
-     * IDs de artistas que dieron like mutuo con $artistId (match confirmado),
-     * sin importar si ya se vio el pop-up o si ya existe un swap.
-     */
     public static function mutualMatchArtistIdsFor(int $artistId): Collection
     {
         return static::where('liker_artist_id', $artistId)
@@ -40,30 +36,29 @@ class Like extends Model
     }
 
     /**
-     * De los matches mutuos de $artistId, los que todavía no generaron
-     * ningún swap activo (pendiente o aceptado). Un swap rechazado o
-     * cancelado NO bloquea que vuelva a aparecer como "new match".
+     * Matches mutuos con $artistId que todavía no tienen NINGÚN swap
+     * pendiente, aceptado, o cancelado con esa persona. Un swap "rechazado"
+     * (fechas propuestas que no llegaron a confirmarse) SÍ permite reintentar
+     * — pero un swap cancelado (después de haber estado confirmado) es un
+     * compromiso real que se rompió, y bloquea el match para siempre, para
+     * no volver a sorprender con el pop-up a alguien que ya decidió seguir
+     * su búsqueda por otro lado.
      */
     public static function pendingMatchArtistIdsFor(int $artistId): Collection
     {
         $matchedIds = static::mutualMatchArtistIdsFor($artistId);
 
-        $activeSwapArtistIds = Swap::where(function ($q) use ($artistId) {
+        $blockedArtistIds = Swap::where(function ($q) use ($artistId) {
                 $q->where('artist_a_id', $artistId)->orWhere('artist_b_id', $artistId);
             })
-            ->whereIn('status', ['pendiente', 'aceptado'])
+            ->whereIn('status', ['pendiente', 'aceptado', 'cancelado'])
             ->get()
             ->flatMap(fn (Swap $s) => [$s->artist_a_id, $s->artist_b_id])
             ->unique();
 
-        return $matchedIds->diff($activeSwapArtistIds)->values();
+        return $matchedIds->diff($blockedArtistIds)->values();
     }
 
-    /**
-     * Matches mutuos de $artistId que esa persona (como liker) todavía
-     * no descartó del pop-up de notificación, y que no tienen ya un
-     * swap activo (pendiente o aceptado) en curso.
-     */
     public static function unseenMatchesFor(int $artistId)
     {
         return static::where('liker_artist_id', $artistId)

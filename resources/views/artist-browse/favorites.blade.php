@@ -25,21 +25,48 @@
                         $theirFeatureIds = $artist->studio->features->pluck('id')->toArray();
                         $missingIds = array_diff($myPreferenceIds, $theirFeatureIds);
                         $extraFeatures = $artist->studio->features->whereNotIn('id', $myPreferenceIds);
+
+                        $isMatched = $matchedArtistIds->contains($artist->id);
+                        $activeSwap = $isMatched
+                            ? \App\Models\Swap::where('status', '!=', 'rechazado')
+                                ->where(function ($q) use ($artist, $myArtist) {
+                                    $q->where(function ($q2) use ($artist, $myArtist) {
+                                        $q2->where('artist_a_id', $myArtist->id)->where('artist_b_id', $artist->id);
+                                    })->orWhere(function ($q2) use ($artist, $myArtist) {
+                                        $q2->where('artist_a_id', $artist->id)->where('artist_b_id', $myArtist->id);
+                                    });
+                                })
+                                ->latest()
+                                ->first()
+                            : null;
                     @endphp
-                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-white rounded-3xl shadow-sm border {{ $isMatched ? 'border-lavender-300' : 'border-gray-100' }} overflow-hidden">
 
                         <div class="relative h-36 bg-gray-100">
                             @if ($artist->studio->photo)
-                                <img src="{{ photo_url($artist->studio->photo) }}" alt="Studio" class="w-full h-full object-cover">
+                                <img src="{{ photo_url($artist->studio->photo) }}" alt="Studio" class="w-full h-full object-cover {{ !$isMatched ? '' : '' }}">
                             @endif
-                            @if ($matchedArtistIds->contains($artist->id))
+
+                            @if ($activeSwap && $activeSwap->status === 'aceptado')
+                                <span class="absolute top-3 right-3 font-sans font-extrabold text-xs uppercase tracking-wide bg-lima-300 text-gray-900 rounded-full px-3 py-1">
+                                    ✓ Swap confirmed
+                                </span>
+                            @elseif ($activeSwap)
+                                <span class="absolute top-3 right-3 font-sans font-extrabold text-xs uppercase tracking-wide bg-lavender-300 text-gray-900 rounded-full px-3 py-1">
+                                    🤝 Swap in progress
+                                </span>
+                            @elseif ($isMatched)
                                 <span class="absolute top-3 right-3 font-sans font-extrabold text-xs uppercase tracking-wide bg-lavender-300 text-gray-900 rounded-full px-3 py-1">
                                     🎨 Match!
+                                </span>
+                            @else
+                                <span class="absolute top-3 right-3 font-sans font-semibold text-xs uppercase tracking-wide bg-gray-100 text-gray-500 rounded-full px-3 py-1">
+                                    🤍 Liked
                                 </span>
                             @endif
                         </div>
 
-                        <div class="p-5">
+                        <div class="p-5 {{ !$isMatched ? 'opacity-80' : '' }}">
                             <div class="flex items-center gap-2">
                                 @if ($artist->profile_photo)
                                     <img src="{{ photo_url($artist->profile_photo) }}" alt="{{ $artist->user->name }}" class="w-10 h-10 rounded-full object-cover">
@@ -76,6 +103,16 @@
                                         @endforeach
                                     </div>
                                 </div>
+                            @endif
+
+                            @if ($activeSwap)
+                                <a href="{{ route('swaps.index') }}" class="mt-4 block text-center font-sans font-bold text-xs bg-lavender-50 text-lavender-700 hover:bg-lavender-100 rounded-full px-3 py-2 transition">
+                                    View in My Swaps →
+                                </a>
+                            @elseif (!$isMatched)
+                                <p class="font-sans text-xs text-gray-400 mt-3">
+                                    Waiting for them to like you back.
+                                </p>
                             @endif
                         </div>
                     </div>

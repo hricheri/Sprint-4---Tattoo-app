@@ -40,7 +40,7 @@ Selección de features de espacio de trabajo por categoría (must-have / additio
 
 Vista previa de mi perfil como lo ven otrxxs artistas en Explore.
 
-![Perfil de artista](screen_readme/profile.png)
+![Perfil de artista](screen_readme/vista_previa_mia.png)
 
 ### Explorar y matchear
 
@@ -49,6 +49,7 @@ Vista previa de mi perfil como lo ven otrxxs artistas en Explore.
 - Detección de match mutuo con pop-up animado
 - Favoritos con distinción visual: Liked / Match / Swap en progreso / Swap confirmado
 
+![Explore](screen_readme/explore.png)
 ![Favoritos](screen_readme/favorites.png)
 
 ### Coordinar el swap
